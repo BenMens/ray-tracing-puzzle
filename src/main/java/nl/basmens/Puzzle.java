@@ -4,7 +4,12 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import java.io.PrintStream;
 import java.nio.*;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -15,8 +20,11 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Puzzle {
 
 	private long window;
+	private static final Logger logger = LogManager.getLogger(Puzzle.class);
+
 
 	public void run() {
+		logger.info("Main method");
 		init();
 		loop();
 
@@ -28,10 +36,28 @@ public class Puzzle {
 	}
 
 	private void init() {
-		GLFWErrorCallback.createPrint(System.err).set();
 
-		if (!glfwInit())
-			throw new IllegalStateException("Unable to initialize GLFW");
+		glfwSetErrorCallback(new GLFWErrorCallback() {
+            private Map<Integer, String> ERROR_CODES = APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
+
+            @Override
+            public void invoke(int error, long description) {
+                String msg = getDescription(description);
+
+                logger.error("[LWJGL] %s error\n", ERROR_CODES.get(error));
+                logger.error("\tDescription : " + msg);
+                logger.error("\tStacktrace  :");
+                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                for ( int i = 4; i < stack.length; i++ ) {
+                    logger.error("\t\t");
+                    logger.error(stack[i].toString());
+                }
+            }
+        });
+
+
+		// if (!glfwInit())
+		// 	throw new IllegalStateException("Unable to initialize GLFW");
 
 		glfwDefaultWindowHints();
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);

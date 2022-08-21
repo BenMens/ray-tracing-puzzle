@@ -10,9 +10,12 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
 
 public class Level {
+    private static final Logger LOGGER = LogManager.getLogger(Level.class);
 
     private Triangle triangle;
 
@@ -47,32 +50,33 @@ public class Level {
         triangle = new Triangle(renderer);
 
         PuzzleGame.get().windowEvents.register("open",
-                (Event event) -> System.out.println("Open window event received"));
+                (Event event) -> LOGGER.info("Open window event received"));
         PuzzleGame.get().windowEvents.register("close",
-                (Event event) -> System.out.println("Close window event received"));
+                (Event event) -> LOGGER.info("Close window event received"));
 
         PuzzleGame.get().keyEventListener.register(GLFW_KEY_W, (Event event) -> {
-            KeyEvent keyEvent = (KeyEvent)event;
+            KeyEvent keyEvent = (KeyEvent) event;
             if (keyEvent.getAction() == GLFW_PRESS) {
-                System.out.println("The 'w' key has been pressed");
+                LOGGER.info("The 'w' key has been pressed");
             } else if (keyEvent.getAction() == GLFW_RELEASE) {
-                System.out.println("The 'w' key has been released");
+                LOGGER.info("The 'w' key has been released");
             } else {
-                System.out.println("Unknown action with 'w'");
+                LOGGER.info("Unknown action with 'w'");
             }
         });
         PuzzleGame.get().mouseEventListener.register("move", (Event event) -> {
-            MouseEvent mouseEvent = (MouseEvent)event;
-            System.out.println("MouseX moved from " + mouseEvent.getPrevX() + " to " + mouseEvent.getPosX());
-            System.out.println("MouseY moved from " + mouseEvent.getPrevY() + " to " + mouseEvent.getPosY());
+            MouseEvent mouseEvent = (MouseEvent) event;
+            LOGGER.info("MouseX moved from " + mouseEvent.getPrevX() + " to " + mouseEvent.getPosX());
+            LOGGER.info("MouseY moved from " + mouseEvent.getPrevY() + " to " + mouseEvent.getPosY());
         });
         PuzzleGame.get().mouseEventListener.register("click", (Event event) -> {
-            MouseEvent mouseEvent = (MouseEvent)event;
-            System.out.println("Mouse click " + mouseEvent.getButton() + " at " + mouseEvent.getPosX() + ", " + mouseEvent.getPosY());
+            MouseEvent mouseEvent = (MouseEvent) event;
+            LOGGER.info("Mouse click " + mouseEvent.getButton() +
+                    " at " + mouseEvent.getPosX() + ", " + mouseEvent.getPosY());
         });
         PuzzleGame.get().mouseEventListener.register("scroll", (Event event) -> {
-            MouseEvent mouseEvent = (MouseEvent)event;
-            System.out.println("Mouse scroll " + mouseEvent.getScrollX() + ", " + mouseEvent.getScrollY());
+            MouseEvent mouseEvent = (MouseEvent) event;
+            LOGGER.info("Mouse scroll " + mouseEvent.getScrollX() + ", " + mouseEvent.getScrollY());
         });
     }
 

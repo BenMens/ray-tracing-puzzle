@@ -34,9 +34,9 @@ public final class PuzzleGame {
 
     private Scene scene;
 
-    // ====================================================================================================================
+    // =================================================================================================================
     // Singleton
-    // ====================================================================================================================
+    // =================================================================================================================
     private PuzzleGame() {
     }
 
@@ -78,8 +78,8 @@ public final class PuzzleGame {
         // Set log4j error callback
         // ============================================================
         glfwSetErrorCallback(new GLFWErrorCallback() {
-            private Map<Integer, String> ERROR_CODES = APIUtil
-                    .apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
+            private static final Map<Integer, String> ERRORCODES = 
+                APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
 
             @Override
             public void invoke(int error, long description) {
@@ -87,7 +87,7 @@ public final class PuzzleGame {
 
                 String msg = getDescription(description);
 
-                errMsg.append("[LWJGL] " + ERROR_CODES.get(error) + " error\n");
+                errMsg.append("[LWJGL] " + ERRORCODES.get(error) + " error\n");
                 errMsg.append("Description : " + msg + "\n");
                 errMsg.append("Stacktrace  : ");
                 StackTraceElement[] stack = Thread.currentThread().getStackTrace();
@@ -187,9 +187,9 @@ public final class PuzzleGame {
         }
     }
 
-    // ====================================================================================================================
+    // =================================================================================================================
     // Main
-    // ====================================================================================================================
+    // =================================================================================================================
     public static void main(String[] args) {
         PuzzleGame.get().run();
     }

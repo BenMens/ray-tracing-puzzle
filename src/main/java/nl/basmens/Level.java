@@ -3,6 +3,10 @@ package nl.basmens;
 import nl.basmens.renderer.Renderable;
 import nl.basmens.renderer.Renderer;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+
 import org.joml.Vector3f;
 
 public class Level {
@@ -43,6 +47,17 @@ public class Level {
                 (String event, int... args) -> System.out.println("Open window event received"));
         PuzzleGame.get().windowEvents.register("close",
                 (String event, int... args) -> System.out.println("Close window event received"));
+
+        PuzzleGame.get().keyEventListener.register(GLFW_KEY_W, (String event, int... args) -> {
+            if (args[2] == GLFW_PRESS) {
+                System.out.println("The 'w' key has been pressed");
+            } else if (args[2] == GLFW_RELEASE) {
+                System.out.println("The 'w' key has been released");
+            } else {
+                System.out.println("Unknown action with 'w'");
+            }
+        });
+
     }
 
     // =================================================================================================================

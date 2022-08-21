@@ -5,6 +5,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
 import nl.basmens.event_listeners.EventManager;
+import nl.basmens.event_listeners.KeyEventListener;
 import nl.basmens.util.Time;
 
 import java.nio.*;
@@ -21,6 +22,7 @@ public final class PuzzleGame {
 	private long window;
 
 	public final EventManager windowEvents = new EventManager("open", "close");
+	public final KeyEventListener keyEventListener = new KeyEventListener();
 
 	private Scene scene;
 
@@ -94,12 +96,8 @@ public final class PuzzleGame {
 					(vidmode.height() - pHeight.get(0)) / 2);
 		}
 
-		// Close the window when 'esc' is pressed
-		glfwSetKeyCallback(window, (long callBackWindow, int key, int scancode, int action, int mods) -> {
-			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-				glfwSetWindowShouldClose(callBackWindow, true);
-			}
-		});
+		// Set event callbacks
+		glfwSetKeyCallback(window, keyEventListener::keyCallBack);
 
 		glfwMakeContextCurrent(window);
 

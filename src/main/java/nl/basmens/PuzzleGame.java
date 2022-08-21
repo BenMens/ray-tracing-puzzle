@@ -4,9 +4,13 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
-import nl.basmens.util.Time;
-
 import java.nio.*;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import nl.basmens.util.Time;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -15,122 +19,151 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class PuzzleGame {
+    private static final Logger LOGGER = LogManager.getLogger(PuzzleGame.class);
 
-	private long window;
+    private long window;
 
-	private Scene scene;
+    private Scene scene;
 
-	
-	// ====================================================================================================================
-	// Run
-	// ====================================================================================================================
-	public void run() {
-		init();
-		loop();
+    // =================================================================================================================
+    // Run
+    // =================================================================================================================
+    public void run() {
+        try {
+            LOGGER.info("Main method");
+            init();
+            loop();
 
-		glfwFreeCallbacks(window);
-		glfwDestroyWindow(window);
+            glfwFreeCallbacks(window);
+            glfwDestroyWindow(window);
 
-		glfwTerminate();
-		glfwSetErrorCallback(null).free();
-	}
+            glfwTerminate();
+            glfwSetErrorCallback(null).free();
+        } catch (Exception e) {
+            LOGGER.error("Program terminated because of an exception", e);
+        }
+    }
 
+    // =================================================================================================================
+    // Init
+    // =================================================================================================================
+    private void init() {
+        // ============================================================
+        // Set log4j error callback
+        // ============================================================
+        glfwSetErrorCallback(new GLFWErrorCallback() {
+            private Map<Integer, String> ERROR_CODES = APIUtil
+                    .apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
 
-	// ====================================================================================================================
-	// Init
-	// ====================================================================================================================
-	private void init() {
-		GLFWErrorCallback.createPrint(System.err).set();
+            @Override
+            public void invoke(int error, long description) {
+                StringBuilder errMsg = new StringBuilder();
 
-		// ============================================================
-		// Window creation
-		// ============================================================
-		if (!glfwInit()) {
-			throw new IllegalStateException("Unable to initialize GLFW");
-		}
+                String msg = getDescription(description);
 
-		glfwDefaultWindowHints();
-		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+                errMsg.append("[LWJGL] " + ERROR_CODES.get(error) + " error\n");
+                errMsg.append("Description : " + msg + "\n");
+                errMsg.append("Stacktrace  : ");
+                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                // Start at stack[4] to skip internal stack frames.
+                for (int i = 4; i < stack.length; i++) {
+                    if (i > 4) {
+                        errMsg.append("\tat ");
+                    }
+                    errMsg.append(stack[i].toString() + "\n");
+                }
 
-		window = glfwCreateWindow(800, 800, "Ray tracing puzzle", NULL, NULL);
-		if (window == NULL) {
-			throw new RuntimeException("Failed to create the GLFW window");
-		}
+                LOGGER.error(errMsg);
+            }
+        });
 
-		// ============================================================
-		// Set the window position to the centre of the screen
-		// ============================================================
-		try (MemoryStack stack = stackPush()) {
-			IntBuffer pWidth = stack.mallocInt(1);
-			IntBuffer pHeight = stack.mallocInt(1);
+        // ============================================================
+        // Window creation
+        // ============================================================
+        if (!glfwInit()) {
+            throw new IllegalStateException("Unable to initialize GLFW");
+        }
 
-			glfwGetWindowSize(window, pWidth, pHeight);
+        glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-			GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        window = glfwCreateWindow(800, 800, "Ray tracing puzzle", NULL, NULL);
+        if (window == NULL) {
+            throw new RuntimeException("Failed to create the GLFW window");
+        }
 
-			glfwSetWindowPos(
-					window,
-					(vidmode.width() -pWidth.get(0)) / 2,
-					(vidmode.height() - pHeight.get(0)) / 2);
-		}
+        // ============================================================
+        // Set the window position to the centre of the screen
+        // ============================================================
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer pWidth = stack.mallocInt(1);
+            IntBuffer pHeight = stack.mallocInt(1);
 
-		// Close the window when 'esc' is pressed
-		glfwSetKeyCallback(window, (long callBackWindow, int key, int scancode, int action, int mods) -> {
-			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-			 	glfwSetWindowShouldClose(callBackWindow, true);
-		  	}
-		});
+            glfwGetWindowSize(window, pWidth, pHeight);
 
-		glfwMakeContextCurrent(window);
+            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-		// Enable v-sync
-		glfwSwapInterval(1);
+            glfwSetWindowPos(
+                    window,
+                    (vidmode.width() - pWidth.get(0)) / 2,
+                    (vidmode.height() - pHeight.get(0)) / 2);
+        }
 
-		glfwShowWindow(window);
+        // Close the window when 'esc' is pressed
+        glfwSetKeyCallback(window, (long callBackWindow, int key, int scancode, int action, int mods) -> {
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+                glfwSetWindowShouldClose(callBackWindow, true);
+            }
+        });
 
-		// ============================================================
-		// Scene creation
-		// ============================================================
-		scene = new Scene();
-	}
+        glfwMakeContextCurrent(window);
 
-	
-	// ====================================================================================================================
-	// Loop
-	// ====================================================================================================================
-	private void loop() {
-		GL.createCapabilities();
+        // Enable v-sync
+        glfwSwapInterval(1);
 
-		double beginTime = Time.getTime();
-		double endTime;
-		double deltaTime = -1;
+        glfwShowWindow(window);
 
-		glClearColor(0, 0, 0, 1);
+        // ============================================================
+        // Scene creation
+        // ============================================================
+        scene = new Scene();
+    }
 
-		while(!glfwWindowShouldClose(window)) {
-			// Poll events
-			glfwPollEvents();
-			
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // =================================================================================================================
+    // Loop
+    // =================================================================================================================
+    private void loop() {
+        GL.createCapabilities();
 
-			if (deltaTime >= 0) {
-				scene.update(deltaTime);
-			}
-			
-			glfwSwapBuffers(window);
+        double beginTime = Time.getTime();
+        double endTime;
+        double deltaTime = -1;
 
-			endTime = Time.getTime();
-			deltaTime = endTime - beginTime;
-			beginTime = endTime;
-		}
-	}
+        glClearColor(0, 0, 0, 1);
 
+        while (!glfwWindowShouldClose(window)) {
+            // Poll events
+            glfwPollEvents();
 
-	// ====================================================================================================================
-	// Main
-	// ====================================================================================================================
-	public static void main(String[] args) {
-		new PuzzleGame().run();
-	}
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            if (deltaTime >= 0) {
+                scene.update(deltaTime);
+            }
+
+            glfwSwapBuffers(window);
+
+            endTime = Time.getTime();
+            deltaTime = endTime - beginTime;
+            beginTime = endTime;
+        }
+    }
+
+    // =================================================================================================================
+    // Main
+    // =================================================================================================================
+    public static void main(String[] args) {
+        new PuzzleGame().run();
+    }
 }

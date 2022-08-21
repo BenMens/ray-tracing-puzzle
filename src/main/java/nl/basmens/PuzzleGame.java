@@ -19,29 +19,29 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class PuzzleGame {
 
     private long window;
-    private static final Logger logger = LogManager.getLogger(PuzzleGame.class);
-
+    private static final Logger LOGGER = LogManager.getLogger(PuzzleGame.class);
 
     public void run() {
         try {
-            logger.info("Main method");
+            LOGGER.info("Main method");
             init();
             loop();
-    
+
             glfwFreeCallbacks(window);
             glfwDestroyWindow(window);
-    
+
             glfwTerminate();
-            glfwSetErrorCallback(null).free();	
+            glfwSetErrorCallback(null).free();
         } catch (Exception e) {
-            logger.error("Program terminated because of an exception", e);
+            LOGGER.error("Program terminated because of an exception", e);
         }
     }
 
     private void init() {
 
         glfwSetErrorCallback(new GLFWErrorCallback() {
-            private Map<Integer, String> ERROR_CODES = APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
+            private Map<Integer, String> ERROR_CODES = APIUtil
+                    .apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
 
             @Override
             public void invoke(int error, long description) {
@@ -53,20 +53,20 @@ public class PuzzleGame {
                 errMsg.append("Description : " + msg + "\n");
                 errMsg.append("Stacktrace  : ");
                 StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-                for ( int i = 4; i < stack.length; i++ ) {
+                // Start at stack[4] to skip internal stack frames.
+                for (int i = 4; i < stack.length; i++) {
                     if (i > 4) {
                         errMsg.append("\tat ");
                     }
                     errMsg.append(stack[i].toString() + "\n");
                 }
 
-                logger.error(errMsg);
+                LOGGER.error(errMsg);
             }
         });
 
-
-        // if (!glfwInit())
-        //     throw new IllegalStateException("Unable to initialize GLFW");
+        if (!glfwInit())
+            throw new IllegalStateException("Unable to initialize GLFW");
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
@@ -91,7 +91,7 @@ public class PuzzleGame {
 
             glfwSetWindowPos(
                     window,
-                    (vidmode.width() -pWidth.get(0)) / 2,
+                    (vidmode.width() - pWidth.get(0)) / 2,
                     (vidmode.height() - pHeight.get(0)) / 2);
         }
 

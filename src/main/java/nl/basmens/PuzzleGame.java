@@ -4,8 +4,9 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
-import nl.basmens.event_listeners.EventManager;
-import nl.basmens.event_listeners.KeyEventListener;
+import nl.basmens.events.event_listeners.EventManager;
+import nl.basmens.events.event_listeners.KeyEventListener;
+import nl.basmens.events.event_types.Event;
 import nl.basmens.util.Time;
 
 import java.nio.*;
@@ -45,10 +46,10 @@ public final class PuzzleGame {
 	// ====================================================================================================================
 	public void run() {
 		init();
-		windowEvents.notify("open");
+		windowEvents.notify(new Event("open"));
 
 		loop();
-		windowEvents.notify("close");
+		windowEvents.notify(new Event("close"));
 
 		glfwFreeCallbacks(window);
 		glfwDestroyWindow(window);

@@ -1,4 +1,6 @@
-package nl.basmens.event_listeners;
+package nl.basmens.events.event_listeners;
+
+import nl.basmens.events.event_types.KeyEvent;
 
 public class KeyEventListener {
   private static final int MAXKEYS = 350;
@@ -21,7 +23,8 @@ public class KeyEventListener {
   // ===================================================================================================================
   public void keyCallBack(long window, int key, int scanCode, int action, int mods) {
     if (key < MAXKEYS) {
-      eventManager.notify(Integer.toString(key), key, scanCode, action, mods);
+      String eventType = Integer.toString(key);
+      eventManager.notify(new KeyEvent(eventType, key, scanCode, action, mods));
     }
   }
 

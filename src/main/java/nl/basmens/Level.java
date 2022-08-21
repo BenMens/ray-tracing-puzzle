@@ -1,5 +1,7 @@
 package nl.basmens;
 
+import nl.basmens.events.event_types.Event;
+import nl.basmens.events.event_types.KeyEvent;
 import nl.basmens.renderer.Renderable;
 import nl.basmens.renderer.Renderer;
 
@@ -44,14 +46,15 @@ public class Level {
         triangle = new Triangle(renderer);
 
         PuzzleGame.get().windowEvents.register("open",
-                (String event, int... args) -> System.out.println("Open window event received"));
+                (Event event) -> System.out.println("Open window event received"));
         PuzzleGame.get().windowEvents.register("close",
-                (String event, int... args) -> System.out.println("Close window event received"));
+                (Event event) -> System.out.println("Close window event received"));
 
-        PuzzleGame.get().keyEventListener.register(GLFW_KEY_W, (String event, int... args) -> {
-            if (args[2] == GLFW_PRESS) {
+        PuzzleGame.get().keyEventListener.register(GLFW_KEY_W, (Event event) -> {
+            KeyEvent keyEvent = (KeyEvent)event;
+            if (keyEvent.getAction() == GLFW_PRESS) {
                 System.out.println("The 'w' key has been pressed");
-            } else if (args[2] == GLFW_RELEASE) {
+            } else if (keyEvent.getAction() == GLFW_RELEASE) {
                 System.out.println("The 'w' key has been released");
             } else {
                 System.out.println("Unknown action with 'w'");

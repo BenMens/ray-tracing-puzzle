@@ -1,8 +1,10 @@
-package nl.basmens.event_listeners;
+package nl.basmens.events.event_listeners;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import nl.basmens.events.event_types.Event;
 
 // Guide: https://refactoring.guru/design-patterns/observer/java/example
 public class EventManager {
@@ -12,8 +14,8 @@ public class EventManager {
 	// ====================================================================================================================
 	// Constructor
 	// ====================================================================================================================
-    public EventManager(String... events) {
-        for (String event : events) {
+    public EventManager(String... eventTypes) {
+        for (String event : eventTypes) {
             listeners.put(event, new ArrayList<>());
         }
     }
@@ -22,20 +24,22 @@ public class EventManager {
 	// ====================================================================================================================
 	// Register
 	// ====================================================================================================================
-    public void register(String event, Observer observer) {
-        ArrayList<Observer> users = listeners.get(event);
+    public Observer register(String eventType, Observer observer) {
+        ArrayList<Observer> users = listeners.get(eventType);
 
         if (!users.contains(observer)) {
             users.add(observer);
         }
+
+        return observer;
     }
 
 
 	// ====================================================================================================================
 	// Unregister
 	// ====================================================================================================================
-    public void unregister(String event, Observer observer) {
-        ArrayList<Observer> users = listeners.get(event);
+    public void unregister(String eventType, Observer observer) {
+        ArrayList<Observer> users = listeners.get(eventType);
         
         users.remove(observer);
     }
@@ -44,11 +48,11 @@ public class EventManager {
 	// ====================================================================================================================
 	// Notify
 	// ====================================================================================================================
-    public void notify(String event, int... args) {
-        ArrayList<Observer> users = listeners.get(event);
+    public void notify(Event event) {
+        ArrayList<Observer> users = listeners.get(event.getEventType());
 
         for (Observer u : users) {
-            u.invoke(event, args);
+            u.invoke( event);
         }
     }
 }

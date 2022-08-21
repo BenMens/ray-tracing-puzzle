@@ -9,7 +9,7 @@
             "type": "java",
             "name": "Launch Puzzle",
             "request": "launch",
-            "mainClass": "nl.basmens.Puzzle",
+            "mainClass": "nl.basmens.PuzzleGame",
             "projectName": "ray-tracing-puzzle"
         },
         {

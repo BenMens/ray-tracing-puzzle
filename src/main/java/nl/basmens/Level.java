@@ -9,7 +9,6 @@ public class Level {
 
     private Triangle triangle;
 
-
     // TODO replace ugly code for testing
     static class Triangle implements Renderable {
         private double time;
@@ -22,9 +21,9 @@ public class Level {
         public void update(double deltaTime) {
             time += deltaTime;
 
-			float r = 1.5F - (float)Math.abs((time + 0) % 3 - 1.5);
-			float g = 1.5F - (float)Math.abs((time + 1) % 3 - 1.5);
-			float b = 1.5F - (float)Math.abs((time + 2) % 3 - 1.5);
+            float r = (float) (1.5F - Math.abs((time + 0) % 3 - 1.5));
+            float g = (float) (1.5F - Math.abs((time + 1) % 3 - 1.5));
+            float b = (float) (1.5F - Math.abs((time + 2) % 3 - 1.5));
 
             color = new Vector3f(r, g, b);
         }
@@ -34,18 +33,21 @@ public class Level {
         }
     }
 
-
-	// ====================================================================================================================
-	// Constructor
-	// ====================================================================================================================
+    // =================================================================================================================
+    // Constructor
+    // =================================================================================================================
     public Level(Renderer renderer) {
         triangle = new Triangle(renderer);
+
+        PuzzleGame.get().windowEvents.register("open",
+                (String event, int... args) -> System.out.println("Open window event received"));
+        PuzzleGame.get().windowEvents.register("close",
+                (String event, int... args) -> System.out.println("Close window event received"));
     }
 
-
-	// ====================================================================================================================
-	// Update
-	// ====================================================================================================================
+    // =================================================================================================================
+    // Update
+    // =================================================================================================================
     public void update(double deltaTime) {
         triangle.update(deltaTime);
     }

@@ -4,6 +4,7 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import nl.basmens.event_listeners.EventManager;
 import nl.basmens.util.Time;
 
 import java.nio.*;
@@ -14,19 +15,38 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class PuzzleGame {
+public final class PuzzleGame {
+	private static PuzzleGame puzzleGame;
 
 	private long window;
 
+	public final EventManager windowEvents = new EventManager("open", "close");
+
 	private Scene scene;
 
-	
+	// ====================================================================================================================
+	// Singleton
+	// ====================================================================================================================
+	private PuzzleGame() {
+	}
+
+	public static PuzzleGame get() {
+		if (puzzleGame == null) {
+			puzzleGame = new PuzzleGame();
+		}
+
+		return puzzleGame;
+	}
+
 	// ====================================================================================================================
 	// Run
 	// ====================================================================================================================
 	public void run() {
 		init();
+		windowEvents.notify("open");
+
 		loop();
+		windowEvents.notify("close");
 
 		glfwFreeCallbacks(window);
 		glfwDestroyWindow(window);
@@ -34,7 +54,6 @@ public class PuzzleGame {
 		glfwTerminate();
 		glfwSetErrorCallback(null).free();
 	}
-
 
 	// ====================================================================================================================
 	// Init
@@ -71,15 +90,15 @@ public class PuzzleGame {
 
 			glfwSetWindowPos(
 					window,
-					(vidmode.width() -pWidth.get(0)) / 2,
+					(vidmode.width() - pWidth.get(0)) / 2,
 					(vidmode.height() - pHeight.get(0)) / 2);
 		}
 
 		// Close the window when 'esc' is pressed
 		glfwSetKeyCallback(window, (long callBackWindow, int key, int scancode, int action, int mods) -> {
 			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-			 	glfwSetWindowShouldClose(callBackWindow, true);
-		  	}
+				glfwSetWindowShouldClose(callBackWindow, true);
+			}
 		});
 
 		glfwMakeContextCurrent(window);
@@ -95,7 +114,6 @@ public class PuzzleGame {
 		scene = new Scene();
 	}
 
-	
 	// ====================================================================================================================
 	// Loop
 	// ====================================================================================================================
@@ -108,16 +126,16 @@ public class PuzzleGame {
 
 		glClearColor(0, 0, 0, 1);
 
-		while(!glfwWindowShouldClose(window)) {
+		while (!glfwWindowShouldClose(window)) {
 			// Poll events
 			glfwPollEvents();
-			
+
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			if (deltaTime >= 0) {
 				scene.update(deltaTime);
 			}
-			
+
 			glfwSwapBuffers(window);
 
 			endTime = Time.getTime();
@@ -126,11 +144,10 @@ public class PuzzleGame {
 		}
 	}
 
-
 	// ====================================================================================================================
 	// Main
 	// ====================================================================================================================
 	public static void main(String[] args) {
-		new PuzzleGame().run();
+		PuzzleGame.get().run();
 	}
 }

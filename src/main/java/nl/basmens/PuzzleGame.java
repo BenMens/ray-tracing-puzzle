@@ -6,6 +6,7 @@ import org.lwjgl.system.*;
 
 import nl.basmens.events.event_listeners.EventManager;
 import nl.basmens.events.event_listeners.KeyEventListener;
+import nl.basmens.events.event_listeners.MouseEventListener;
 import nl.basmens.events.event_types.Event;
 import nl.basmens.util.Time;
 
@@ -24,6 +25,7 @@ public final class PuzzleGame {
 
 	public final EventManager windowEvents = new EventManager("open", "close");
 	public final KeyEventListener keyEventListener = new KeyEventListener();
+	public final MouseEventListener mouseEventListener = new MouseEventListener();
 
 	private Scene scene;
 
@@ -97,8 +99,13 @@ public final class PuzzleGame {
 					(vidmode.height() - pHeight.get(0)) / 2);
 		}
 
+		// ============================================================
 		// Set event callbacks
+		// ============================================================
 		glfwSetKeyCallback(window, keyEventListener::keyCallBack);
+		glfwSetCursorPosCallback(window, mouseEventListener::mousePosCallBack);
+		glfwSetMouseButtonCallback(window, mouseEventListener::mouseButtonCallback);
+		glfwSetScrollCallback(window, mouseEventListener::mouseScrollCallback);
 
 		glfwMakeContextCurrent(window);
 

@@ -2,6 +2,7 @@ package nl.basmens;
 
 import nl.basmens.events.event_types.Event;
 import nl.basmens.events.event_types.KeyEvent;
+import nl.basmens.events.event_types.MouseEvent;
 import nl.basmens.renderer.Renderable;
 import nl.basmens.renderer.Renderer;
 
@@ -60,7 +61,19 @@ public class Level {
                 System.out.println("Unknown action with 'w'");
             }
         });
-
+        PuzzleGame.get().mouseEventListener.register("move", (Event event) -> {
+            MouseEvent mouseEvent = (MouseEvent)event;
+            System.out.println("MouseX moved from " + mouseEvent.getPrevX() + " to " + mouseEvent.getPosX());
+            System.out.println("MouseY moved from " + mouseEvent.getPrevY() + " to " + mouseEvent.getPosY());
+        });
+        PuzzleGame.get().mouseEventListener.register("click", (Event event) -> {
+            MouseEvent mouseEvent = (MouseEvent)event;
+            System.out.println("Mouse click " + mouseEvent.getButton() + " at " + mouseEvent.getPosX() + ", " + mouseEvent.getPosY());
+        });
+        PuzzleGame.get().mouseEventListener.register("scroll", (Event event) -> {
+            MouseEvent mouseEvent = (MouseEvent)event;
+            System.out.println("Mouse scroll " + mouseEvent.getScrollX() + ", " + mouseEvent.getScrollY());
+        });
     }
 
     // =================================================================================================================

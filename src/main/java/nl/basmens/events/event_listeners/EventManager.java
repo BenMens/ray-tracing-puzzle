@@ -27,8 +27,12 @@ public class EventManager {
     public Observer register(String eventType, Observer observer) {
         ArrayList<Observer> users = listeners.get(eventType);
 
-        if (!users.contains(observer)) {
-            users.add(observer);
+        if (users != null) {
+            if (!users.contains(observer)) {
+                users.add(observer);
+            }
+        } else {
+            // TODO print warning: invalid event type
         }
 
         return observer;
@@ -41,7 +45,11 @@ public class EventManager {
     public void unregister(String eventType, Observer observer) {
         ArrayList<Observer> users = listeners.get(eventType);
         
-        users.remove(observer);
+        if (users != null) {
+            users.remove(observer);
+        } else {
+            // TODO print warning: invalid event type
+        }
     }
 
 
@@ -51,8 +59,12 @@ public class EventManager {
     public void notify(Event event) {
         ArrayList<Observer> users = listeners.get(event.getEventType());
 
-        for (Observer u : users) {
-            u.invoke( event);
+        if (users != null) {
+            for (Observer u : users) {
+                u.invoke( event);
+            }
+        } else {
+            // TODO print warning: invalid event type
         }
     }
 }

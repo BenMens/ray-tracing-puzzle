@@ -10,10 +10,10 @@ import org.apache.logging.log4j.Logger;
 import nl.basmens.events.event_types.Event;
 
 // Guide: https://refactoring.guru/design-patterns/observer/java/example
-public class EventManager {
+public class EventManager<E extends Event> {
     private static final Logger LOGGER = LogManager.getLogger(EventManager.class);
 
-    private Map<String, ArrayList<Observer>> listeners = new HashMap<>();
+    private Map<String, ArrayList<Observer<E>>> listeners = new HashMap<>();
 
     // =================================================================================================================
     // Constructor
@@ -27,8 +27,8 @@ public class EventManager {
     // =================================================================================================================
     // Register
     // =================================================================================================================
-    public Observer register(String eventType, Observer observer) {
-        ArrayList<Observer> users = listeners.get(eventType);
+    public Observer<E> register(String eventType, Observer<E> observer) {
+        ArrayList<Observer<E>> users = listeners.get(eventType);
 
         if (users != null) {
             if (!users.contains(observer)) {
@@ -44,8 +44,8 @@ public class EventManager {
     // =================================================================================================================
     // Unregister
     // =================================================================================================================
-    public void unregister(String eventType, Observer observer) {
-        ArrayList<Observer> users = listeners.get(eventType);
+    public void unregister(String eventType, Observer<E> observer) {
+        ArrayList<Observer<E>> users = listeners.get(eventType);
 
         if (users != null) {
             users.remove(observer);
@@ -57,11 +57,11 @@ public class EventManager {
     // =================================================================================================================
     // Notify
     // =================================================================================================================
-    public void notify(Event eventType) {
-        ArrayList<Observer> users = listeners.get(eventType.getEventType());
+    public void notify(E eventType) {
+        ArrayList<Observer<E>> users = listeners.get(eventType.getEventType());
 
         if (users != null) {
-            for (Observer u : users) {
+            for (Observer<E> u : users) {
                 u.invoke(eventType);
             }
         } else {

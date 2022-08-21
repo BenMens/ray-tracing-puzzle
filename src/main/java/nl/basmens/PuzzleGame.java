@@ -28,7 +28,7 @@ public final class PuzzleGame {
 
     private long window;
 
-    public final EventManager windowEvents = new EventManager("open", "close");
+    public final EventManager<Event> windowEvents = new EventManager<>("open", "close");
     public final KeyEventListener keyEventListener = new KeyEventListener();
     public final MouseEventListener mouseEventListener = new MouseEventListener();
 

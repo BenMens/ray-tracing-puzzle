@@ -54,30 +54,23 @@ public class Level {
         PuzzleGame.get().windowEvents.register("close",
                 (Event event) -> LOGGER.info("Close window event received"));
 
-        PuzzleGame.get().keyEventListener.register(GLFW_KEY_W, (Event event) -> {
-            KeyEvent keyEvent = (KeyEvent) event;
-            if (keyEvent.getAction() == GLFW_PRESS) {
+        PuzzleGame.get().keyEventListener.register(GLFW_KEY_W, (KeyEvent event) -> {
+            if (event.getAction() == GLFW_PRESS) {
                 LOGGER.info("The 'w' key has been pressed");
-            } else if (keyEvent.getAction() == GLFW_RELEASE) {
+            } else if (event.getAction() == GLFW_RELEASE) {
                 LOGGER.info("The 'w' key has been released");
             } else {
                 LOGGER.info("Unknown action with 'w'");
             }
         });
-        PuzzleGame.get().mouseEventListener.register("move", (Event event) -> {
-            MouseEvent mouseEvent = (MouseEvent) event;
-            LOGGER.info("MouseX moved from " + mouseEvent.getPrevX() + " to " + mouseEvent.getPosX());
-            LOGGER.info("MouseY moved from " + mouseEvent.getPrevY() + " to " + mouseEvent.getPosY());
+        PuzzleGame.get().mouseEventListener.register("move", (MouseEvent event) -> {
+            LOGGER.info("MouseX moved from " + event.getPrevX() + " to " + event.getPosX());
+            LOGGER.info("MouseY moved from " + event.getPrevY() + " to " + event.getPosY());
         });
-        PuzzleGame.get().mouseEventListener.register("click", (Event event) -> {
-            MouseEvent mouseEvent = (MouseEvent) event;
-            LOGGER.info("Mouse click " + mouseEvent.getButton() +
-                    " at " + mouseEvent.getPosX() + ", " + mouseEvent.getPosY());
-        });
-        PuzzleGame.get().mouseEventListener.register("scroll", (Event event) -> {
-            MouseEvent mouseEvent = (MouseEvent) event;
-            LOGGER.info("Mouse scroll " + mouseEvent.getScrollX() + ", " + mouseEvent.getScrollY());
-        });
+        PuzzleGame.get().mouseEventListener.register("click", (MouseEvent event) -> LOGGER
+                .info("Mouse click " + event.getButton() + " at " + event.getPosX() + ", " + event.getPosY()));
+        PuzzleGame.get().mouseEventListener.register("scroll",
+                (MouseEvent event) -> LOGGER.info("Mouse scroll " + event.getScrollX() + ", " + event.getScrollY()));
     }
 
     // =================================================================================================================

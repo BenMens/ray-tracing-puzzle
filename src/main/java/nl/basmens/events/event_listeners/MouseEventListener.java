@@ -3,7 +3,7 @@ package nl.basmens.events.event_listeners;
 import nl.basmens.events.event_types.MouseEvent;
 
 public class MouseEventListener {
-    private EventManager eventManager;
+    private EventManager<MouseEvent> eventManager;
 
     private double prevX;
     private double prevY;
@@ -16,7 +16,7 @@ public class MouseEventListener {
     // Constructor
     // =================================================================================================================
     public MouseEventListener() {
-        eventManager = new EventManager("click", "scroll", "move");
+        eventManager = new EventManager<>("click", "scroll", "move");
 
         prevX = 0;
         prevY = 0;
@@ -56,14 +56,14 @@ public class MouseEventListener {
     // =================================================================================================================
     // Register
     // =================================================================================================================
-    public Observer register(String eventType, Observer observer) {
+    public Observer<MouseEvent> register(String eventType, Observer<MouseEvent> observer) {
         return eventManager.register(eventType, observer);
     }
 
     // =================================================================================================================
     // Unregister
     // =================================================================================================================
-    public void unregister(String eventType, Observer observer) {
+    public void unregister(String eventType, Observer<MouseEvent> observer) {
         eventManager.unregister(eventType, observer);
     }
 }

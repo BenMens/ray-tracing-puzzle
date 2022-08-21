@@ -5,7 +5,7 @@ import nl.basmens.events.event_types.KeyEvent;
 public class KeyEventListener {
     private static final int MAXKEYS = 350;
 
-    private EventManager eventManager;
+    private EventManager<KeyEvent> eventManager;
 
     // =================================================================================================================
     // Constructor
@@ -15,7 +15,7 @@ public class KeyEventListener {
         for (int i = 0; i < events.length; i++) {
             events[i] = Integer.toString(i);
         }
-        eventManager = new EventManager(events);
+        eventManager = new EventManager<>(events);
     }
 
     // =================================================================================================================
@@ -31,14 +31,14 @@ public class KeyEventListener {
     // =================================================================================================================
     // Register
     // =================================================================================================================
-    public Observer register(int event, Observer observer) {
+    public Observer<KeyEvent> register(int event, Observer<KeyEvent> observer) {
         return eventManager.register(Integer.toString(event), observer);
     }
 
     // =================================================================================================================
     // Unregister
     // =================================================================================================================
-    public void unregister(int event, Observer observer) {
+    public void unregister(int event, Observer<KeyEvent> observer) {
         eventManager.unregister(Integer.toString(event), observer);
     }
 }

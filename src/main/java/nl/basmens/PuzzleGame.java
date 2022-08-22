@@ -10,6 +10,10 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import nl.basmens.events.event_listeners.EventManager;
+import nl.basmens.events.event_listeners.KeyEventListener;
+import nl.basmens.events.event_listeners.MouseEventListener;
+import nl.basmens.events.event_types.Event;
 import nl.basmens.util.Time;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -18,12 +22,31 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class PuzzleGame {
+public final class PuzzleGame {
+    private static PuzzleGame puzzleGame;
     private static final Logger LOGGER = LogManager.getLogger(PuzzleGame.class);
 
     private long window;
 
+    public final EventManager<Event> windowEvents = new EventManager<>("open", "close");
+    public final KeyEventListener keyEventListener = new KeyEventListener();
+    public final MouseEventListener mouseEventListener = new MouseEventListener();
+
     private Scene scene;
+
+    // =================================================================================================================
+    // Singleton
+    // =================================================================================================================
+    private PuzzleGame() {
+    }
+
+    public static PuzzleGame get() {
+        if (puzzleGame == null) {
+            puzzleGame = new PuzzleGame();
+        }
+
+        return puzzleGame;
+    }
 
     // =================================================================================================================
     // Run
@@ -32,7 +55,10 @@ public class PuzzleGame {
         try {
             LOGGER.info("Main method");
             init();
+            windowEvents.notify(new Event("open"));
+
             loop();
+            windowEvents.notify(new Event("close"));
 
             glfwFreeCallbacks(window);
             glfwDestroyWindow(window);
@@ -52,8 +78,8 @@ public class PuzzleGame {
         // Set log4j error callback
         // ============================================================
         glfwSetErrorCallback(new GLFWErrorCallback() {
-            private Map<Integer, String> ERROR_CODES = APIUtil
-                    .apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
+            private static final Map<Integer, String> ERRORCODES = 
+                APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
 
             @Override
             public void invoke(int error, long description) {
@@ -61,7 +87,7 @@ public class PuzzleGame {
 
                 String msg = getDescription(description);
 
-                errMsg.append("[LWJGL] " + ERROR_CODES.get(error) + " error\n");
+                errMsg.append("[LWJGL] " + ERRORCODES.get(error) + " error\n");
                 errMsg.append("Description : " + msg + "\n");
                 errMsg.append("Stacktrace  : ");
                 StackTraceElement[] stack = Thread.currentThread().getStackTrace();
@@ -110,12 +136,13 @@ public class PuzzleGame {
                     (vidmode.height() - pHeight.get(0)) / 2);
         }
 
-        // Close the window when 'esc' is pressed
-        glfwSetKeyCallback(window, (long callBackWindow, int key, int scancode, int action, int mods) -> {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwSetWindowShouldClose(callBackWindow, true);
-            }
-        });
+        // ============================================================
+        // Set event callbacks
+        // ============================================================
+        glfwSetKeyCallback(window, keyEventListener::keyCallBack);
+        glfwSetCursorPosCallback(window, mouseEventListener::mousePosCallBack);
+        glfwSetMouseButtonCallback(window, mouseEventListener::mouseButtonCallback);
+        glfwSetScrollCallback(window, mouseEventListener::mouseScrollCallback);
 
         glfwMakeContextCurrent(window);
 
@@ -164,6 +191,6 @@ public class PuzzleGame {
     // Main
     // =================================================================================================================
     public static void main(String[] args) {
-        new PuzzleGame().run();
+        PuzzleGame.get().run();
     }
 }

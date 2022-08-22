@@ -1,14 +1,23 @@
 package nl.basmens;
 
+import nl.basmens.events.event_types.Event;
+import nl.basmens.events.event_types.KeyEvent;
+import nl.basmens.events.event_types.MouseEvent;
 import nl.basmens.renderer.Renderable;
 import nl.basmens.renderer.Renderer;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
 
 public class Level {
+    private static final Logger LOGGER = LogManager.getLogger(Level.class);
 
     private Triangle triangle;
-
 
     // TODO replace ugly code for testing
     static class Triangle implements Renderable {
@@ -22,9 +31,9 @@ public class Level {
         public void update(double deltaTime) {
             time += deltaTime;
 
-			float r = 1.5F - (float)Math.abs((time + 0) % 3 - 1.5);
-			float g = 1.5F - (float)Math.abs((time + 1) % 3 - 1.5);
-			float b = 1.5F - (float)Math.abs((time + 2) % 3 - 1.5);
+            float r = (float) (1.5F - Math.abs((time + 0) % 3 - 1.5));
+            float g = (float) (1.5F - Math.abs((time + 1) % 3 - 1.5));
+            float b = (float) (1.5F - Math.abs((time + 2) % 3 - 1.5));
 
             color = new Vector3f(r, g, b);
         }
@@ -34,18 +43,39 @@ public class Level {
         }
     }
 
-
-	// ====================================================================================================================
-	// Constructor
-	// ====================================================================================================================
+    // =================================================================================================================
+    // Constructor
+    // =================================================================================================================
     public Level(Renderer renderer) {
         triangle = new Triangle(renderer);
+
+        PuzzleGame.get().windowEvents.register("open",
+                (Event event) -> LOGGER.info("Open window event received"));
+        PuzzleGame.get().windowEvents.register("close",
+                (Event event) -> LOGGER.info("Close window event received"));
+
+        PuzzleGame.get().keyEventListener.register(GLFW_KEY_W, (KeyEvent event) -> {
+            if (event.getAction() == GLFW_PRESS) {
+                LOGGER.info("The 'w' key has been pressed");
+            } else if (event.getAction() == GLFW_RELEASE) {
+                LOGGER.info("The 'w' key has been released");
+            } else {
+                LOGGER.info("Unknown action with 'w'");
+            }
+        });
+        PuzzleGame.get().mouseEventListener.register("move", (MouseEvent event) -> {
+            LOGGER.info("MouseX moved from " + event.getPrevX() + " to " + event.getPosX());
+            LOGGER.info("MouseY moved from " + event.getPrevY() + " to " + event.getPosY());
+        });
+        PuzzleGame.get().mouseEventListener.register("click", (MouseEvent event) -> LOGGER
+                .info("Mouse click " + event.getButton() + " at " + event.getPosX() + ", " + event.getPosY()));
+        PuzzleGame.get().mouseEventListener.register("scroll",
+                (MouseEvent event) -> LOGGER.info("Mouse scroll " + event.getScrollX() + ", " + event.getScrollY()));
     }
 
-
-	// ====================================================================================================================
-	// Update
-	// ====================================================================================================================
+    // =================================================================================================================
+    // Update
+    // =================================================================================================================
     public void update(double deltaTime) {
         triangle.update(deltaTime);
     }

@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
@@ -180,7 +179,6 @@ public class Renderer {
         cb.put(1f).put(0f).put(0f).put(1.0f);
         cb.put(0f).put(1f).put(0f).put(1.0f);
         cb.put(0f).put(0f).put(1f).put(1.0f);
-
         cb.put(0f).put(1f).put(0f).put(1.0f);
         cb.put(0f).put(0f).put(1f).put(1.0f);
         cb.put(1f).put(1f).put(1f).put(1.0f);
@@ -211,6 +209,9 @@ public class Renderer {
     // Render
     // ====================================================================================================================
     public void render() {
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         for (Renderable r : renderables) {
             glUseProgram(this.shaderPrograms.get("shader1"));
             glBindVertexArray(vao);

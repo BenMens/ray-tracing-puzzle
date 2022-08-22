@@ -1,5 +1,6 @@
 package nl.basmens;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
@@ -148,7 +149,13 @@ public class PuzzleGame {
             // Poll events
             glfwPollEvents();
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            IntBuffer w = BufferUtils.createIntBuffer(4);
+            IntBuffer h = BufferUtils.createIntBuffer(4);
+            glfwGetWindowSize(window, w, h);
+            int width = w.get(0);
+            int height = h.get(0);
+
+            glViewport(0, 0, width, height);
 
             if (deltaTime >= 0) {
                 scene.update(deltaTime);

@@ -133,8 +133,10 @@ public class PuzzleGame {
     // =================================================================================================================
     // Loop
     // =================================================================================================================
-    private void loop() {
+    private void loop() throws Exception {
         GL.createCapabilities();
+
+        scene.init();
 
         double beginTime = Time.getTime();
         double endTime;

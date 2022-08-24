@@ -3,6 +3,8 @@ package nl.basmens;
 import nl.basmens.renderer.Renderable;
 import nl.basmens.renderer.Renderer;
 
+import java.nio.ByteBuffer;
+
 import org.joml.Vector3f;
 
 public class Level {
@@ -29,9 +31,13 @@ public class Level {
             color = new Vector3f(r, g, b);
         }
 
-        public Vector3f getColor() {
-            return color;
+        public void getData(ByteBuffer data) {
+            data.putFloat(color.x);
+            data.putFloat(color.y);
+            data.putFloat(color.z);
+            data.putFloat(1f);
         }
+
     }
 
 

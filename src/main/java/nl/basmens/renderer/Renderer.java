@@ -34,8 +34,6 @@ public class Renderer {
     private int vao;
     private int shaderBuffer;
 
-    private Float color = 0f;
-
     // ====================================================================================================================
     // Constructor
     // ====================================================================================================================
@@ -219,33 +217,26 @@ public class Renderer {
     // ====================================================================================================================
     public void render() {
 
-        color = color + 0.01f;
-        color = color - (float)Math.floor(color);
-
         ByteBuffer sb = BufferUtils.createByteBuffer(1 * 4 * 4);
-        sb.putFloat(color);
-        sb.putFloat(0f);
-        sb.putFloat(0f);
-        sb.putFloat(1.0f);
+        for (Renderable r : renderables) {
+            r.getData(sb);
+        }
         sb.flip();
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer);
         glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);    
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        for (Renderable r : renderables) {
-            glUseProgram(this.shaderPrograms.get("shader1"));
-            glBindVertexArray(vao);
+        glUseProgram(this.shaderPrograms.get("shader1"));
+        glBindVertexArray(vao);
 
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, shaderBuffer);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, shaderBuffer);
 
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            glBindVertexArray(0);
-            glUseProgram(0);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);        
-        }
+        glBindVertexArray(0);
+        glUseProgram(0);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);        
     }
 }

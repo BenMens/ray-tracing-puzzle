@@ -88,6 +88,8 @@ public class PuzzleGame {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
         window = glfwCreateWindow(800, 800, "Ray tracing puzzle", NULL, NULL);
         if (window == NULL) {

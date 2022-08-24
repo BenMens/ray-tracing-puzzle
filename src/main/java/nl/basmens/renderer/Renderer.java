@@ -1,6 +1,6 @@
 package nl.basmens.renderer;
 
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
+import nl.basmens.util.IOUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,10 +18,9 @@ import org.lwjgl.system.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.opengl.GL43C.*;
 import static org.lwjgl.system.MemoryStack.*;
 
-import nl.basmens.util.IOUtil;
 
 public class Renderer {
     private static final Logger LOGGER = LogManager.getLogger(Renderer.class);
@@ -33,6 +32,9 @@ public class Renderer {
     private HashMap<String, Integer> shaderPrograms = new HashMap<>();
 
     private int vao;
+    private int shaderBuffer;
+
+    private Float color = 0f;
 
     // ====================================================================================================================
     // Constructor
@@ -69,7 +71,9 @@ public class Renderer {
     public void init() throws Exception {
         int version;
         GLCapabilities caps = GL.getCapabilities();
-        if (caps.OpenGL33) {
+        if (caps.OpenGL41) {
+            version = 430;
+        } else if (caps.OpenGL33) {
             version = 330;
         } else if (caps.OpenGL21) {
             version = 120;
@@ -108,6 +112,7 @@ public class Renderer {
         LOGGER.trace("loaded shader programs \n{}", shaderPrograms.toString());
 
         createVao();
+        createShaderBuffer();
     }
 
     // ====================================================================================================================
@@ -205,10 +210,28 @@ public class Renderer {
         glBindVertexArray(0);
     }
 
+    void createShaderBuffer() {
+        shaderBuffer = glGenBuffers();
+    }
+
     // ====================================================================================================================
     // Render
     // ====================================================================================================================
     public void render() {
+
+        color = color + 0.01f;
+        color = color - (float)Math.floor(color);
+
+        ByteBuffer sb = BufferUtils.createByteBuffer(1 * 4 * 4);
+        sb.putFloat(color);
+        sb.putFloat(0f);
+        sb.putFloat(0f);
+        sb.putFloat(1.0f);
+        sb.flip();
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);    
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -216,10 +239,13 @@ public class Renderer {
             glUseProgram(this.shaderPrograms.get("shader1"));
             glBindVertexArray(vao);
 
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, shaderBuffer);
+
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
             glBindVertexArray(0);
             glUseProgram(0);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);        
         }
     }
 }

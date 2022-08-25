@@ -139,6 +139,8 @@ public class PuzzleGame {
     private void loop() throws Exception {
         GL.createCapabilities();
 
+        LOGGER.trace("GL version is {}", glGetString(GL_VERSION));
+
         scene.init();
 
         double beginTime = Time.getTime();

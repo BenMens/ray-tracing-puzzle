@@ -11,8 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,9 +19,9 @@ import org.apache.logging.log4j.Logger;
 import static org.lwjgl.opengl.GL43C.*;
 import static org.lwjgl.system.MemoryStack.*;
 
-
 public class Renderer {
     private static final Logger LOGGER = LogManager.getLogger(Renderer.class);
+    
     private static final int VERTEX_POSITION_ATTRIBUTE_LOCATION = 0;
     private static final int VERTEX_COLOR_ATTRIBUTE_LOCATION = 1;
     private static final int SHADER_BUFFER_BINDING = 3;
@@ -68,26 +66,13 @@ public class Renderer {
     // Initialization
     // ====================================================================================================================
     public void init() throws Exception {
-        int version;
-        GLCapabilities caps = GL.getCapabilities();
-        if (caps.OpenGL41) {
-            version = 430;
-        } else if (caps.OpenGL33) {
-            version = 330;
-        } else if (caps.OpenGL21) {
-            version = 120;
-        } else {
-            version = 110;
-        }
-        LOGGER.trace("GL version is {}", version);
-
         LOGGER.trace("reading vertex shader");
+
         ByteBuffer vs = IOUtil.ioResourceToByteBuffer("shaders/vertex/vertex.vert", 4096);
         int v = glCreateShader(GL_VERTEX_SHADER);
-        compileShader(version, v, vs);
+        compileShader(v, vs);
 
         String fragmentShadersPath = "shaders/fragment";
-
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try (
                 InputStream in = classLoader.getResourceAsStream(fragmentShadersPath);
@@ -96,14 +81,13 @@ public class Renderer {
 
             while ((resource = br.readLine()) != null) {
                 LOGGER.trace("reading fragment shader {}", resource);
+
                 ByteBuffer fs = IOUtil.ioResourceToByteBuffer(fragmentShadersPath + "/" + resource, 4096);
                 int f = glCreateShader(GL_FRAGMENT_SHADER);
-                compileShader(version, f, fs);
+                compileShader(f, fs);
 
-                int program = compileShaderProgram(version, v, f);
-
+                int program = compileShaderProgram(v, f);
                 String baseName = resource.split("\\.(?=[^\\.]+$)")[0];
-
                 shaderPrograms.put(baseName, program);
             }
         }
@@ -131,14 +115,12 @@ public class Renderer {
         }
     }
 
-    private void compileShader(int version, int shader, ByteBuffer code) {
+    private void compileShader(int shader, ByteBuffer code) {
         try (MemoryStack stack = stackPush()) {
-            ByteBuffer header = stack.ASCII("#version " + version + "\n#line 0\n", false);
-
             glShaderSource(
                     shader,
-                    stack.pointers(header, code),
-                    stack.ints(header.remaining(), code.remaining()));
+                    stack.pointers(code),
+                    stack.ints(code.remaining()));
 
             glCompileShader(shader);
             printShaderInfoLog(shader);
@@ -149,7 +131,7 @@ public class Renderer {
         }
     }
 
-    private int compileShaderProgram(int version, int v, int f) {
+    private int compileShaderProgram(int v, int f) {
         int p = glCreateProgram();
 
         glAttachShader(p, v);
@@ -164,9 +146,8 @@ public class Renderer {
         return p;
     }
 
-
     // ====================================================================================================================
-    // Create Vertex Arrays Object
+    // Create Vertex Arrays Object and buffers
     // ====================================================================================================================
 
     void createVao() {
@@ -226,7 +207,7 @@ public class Renderer {
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer);
         glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);        
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         glUseProgram(this.shaderPrograms.get("shader1"));
         glBindVertexArray(vao);

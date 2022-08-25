@@ -1,3 +1,5 @@
+#version 430
+
 in highp vec4 color;
 layout(binding=3) buffer shaderBuf
 {

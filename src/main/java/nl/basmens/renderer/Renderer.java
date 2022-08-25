@@ -26,6 +26,7 @@ public class Renderer {
     private static final Logger LOGGER = LogManager.getLogger(Renderer.class);
     private static final int VERTEX_POSITION_ATTRIBUTE_LOCATION = 0;
     private static final int VERTEX_COLOR_ATTRIBUTE_LOCATION = 1;
+    private static final int SHADER_BUFFER_BINDING = 3;
 
     private ArrayList<Renderable> renderables;
 
@@ -225,18 +226,17 @@ public class Renderer {
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer);
         glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);        
 
         glUseProgram(this.shaderPrograms.get("shader1"));
         glBindVertexArray(vao);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, shaderBuffer);
 
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, shaderBuffer);
-
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, 0);
         glBindVertexArray(0);
         glUseProgram(0);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);        
     }
 }

@@ -59,7 +59,7 @@ public final class IOUtil {
                 try (
                         InputStream source = IOUtil.class.getClassLoader().getResourceAsStream(resource);
                         ReadableByteChannel rbc = Channels.newChannel(source)) {
-                    buffer = createByteBuffer(bufferSize);
+                    buffer = BufferUtils.createByteBuffer(bufferSize);
     
                     while (true) {
                         int bytes = rbc.read(buffer);

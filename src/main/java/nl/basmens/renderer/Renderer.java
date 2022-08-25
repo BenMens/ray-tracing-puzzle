@@ -121,7 +121,6 @@ public class Renderer {
                     shader,
                     stack.pointers(code),
                     stack.ints(code.remaining()));
-
             glCompileShader(shader);
             printShaderInfoLog(shader);
 

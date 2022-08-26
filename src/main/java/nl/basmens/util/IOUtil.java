@@ -14,7 +14,6 @@ import java.nio.file.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static org.lwjgl.BufferUtils.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public final class IOUtil {

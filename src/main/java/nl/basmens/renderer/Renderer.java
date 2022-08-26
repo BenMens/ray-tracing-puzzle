@@ -236,43 +236,45 @@ public class Renderer {
   // ===============================================================================================
   public void render() {
 
-    ByteBuffer sb = BufferUtils.createByteBuffer(1 * 4 * 4);
-    for (Renderable r : renderables) {
-      r.getData(sb);
+    try (MemoryStack stack = stackPush()) {
+      ByteBuffer sb = stack.malloc(1 * 4 * 4);
+      for (Renderable r : renderables) {
+        r.getData(sb);
+      }
+      sb.flip();
+  
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer);
+      glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  
+      glUseProgram(this.shaderPrograms.get("shader1"));
+  
+      Vector3f position = camera.getPosition();
+      glUniform3f(CAMERA_POSITION_UNIFORM_LOCATION, position.x, position.y, position.z);
+  
+      Vector3f direction = camera.getDirection();
+      glUniform3f(CAMERA_DIRECTION_UNIFORM_LOCATION, direction.x, direction.y, direction.z);
+  
+      glUniform1f(CAMERA_FOV_UNIFORM_LOCATION, camera.getFov());
+  
+      FloatBuffer matBuffer = stack.mallocFloat(16);
+  
+      camera.getPointCameraMatrix().get(matBuffer);
+      glUniformMatrix4fv(CAMERA_POINT_MATRIX_UNIFORM_LOCATION, false, matBuffer);
+  
+      camera.getVectorCameraMatrix().get(matBuffer);
+      glUniformMatrix4fv(CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION, false, matBuffer);
+  
+      glBindVertexArray(vao);
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, shaderBuffer);
+  
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+  
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, 0);
+      glBindVertexArray(0);
+      glUseProgram(0);
     }
-    sb.flip();
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    glUseProgram(this.shaderPrograms.get("shader1"));
-
-    Vector3f position = camera.getPosition();
-    glUniform3f(CAMERA_POSITION_UNIFORM_LOCATION, position.x, position.y, position.z);
-
-    Vector3f direction = camera.getDirection();
-    glUniform3f(CAMERA_DIRECTION_UNIFORM_LOCATION, direction.x, direction.y, direction.z);
-
-    glUniform1f(CAMERA_FOV_UNIFORM_LOCATION, camera.getFov());
-
-    FloatBuffer matBuffer = BufferUtils.createFloatBuffer(16);
-
-    camera.getPointCameraMatrix().get(matBuffer);
-    glUniformMatrix4fv(CAMERA_POINT_MATRIX_UNIFORM_LOCATION, false, matBuffer);
-
-    camera.getVectorCameraMatrix().get(matBuffer);
-    glUniformMatrix4fv(CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION, false, matBuffer);
-
-    glBindVertexArray(vao);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, shaderBuffer);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, 0);
-    glBindVertexArray(0);
-    glUseProgram(0);
   }
 
   public Camera getCamera() {

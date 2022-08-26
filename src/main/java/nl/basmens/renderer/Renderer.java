@@ -47,7 +47,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import nl.basmens.util.IOUtil;
+import nl.basmens.util.IoUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
@@ -110,7 +110,7 @@ public class Renderer {
   public void init() throws Exception {
     LOGGER.trace("reading vertex shader");
 
-    ByteBuffer vs = IOUtil.ioResourceToByteBuffer("shaders/vertex/vertex.vert", 4096);
+    ByteBuffer vs = IoUtil.ioResourceToByteBuffer("shaders/vertex/vertex.vert", 4096);
     int v = glCreateShader(GL_VERTEX_SHADER);
     compileShader(v, vs);
 
@@ -123,7 +123,7 @@ public class Renderer {
       while ((resource = br.readLine()) != null) {
         LOGGER.trace("reading fragment shader {}", resource);
 
-        ByteBuffer fs = IOUtil.ioResourceToByteBuffer(fragmentShadersPath + "/" + resource, 4096);
+        ByteBuffer fs = IoUtil.ioResourceToByteBuffer(fragmentShadersPath + "/" + resource, 4096);
         int f = glCreateShader(GL_FRAGMENT_SHADER);
         compileShader(f, fs);
 

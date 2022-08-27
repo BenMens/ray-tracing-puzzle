@@ -1,42 +1,17 @@
 package nl.basmens;
 
-import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
-import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
-import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
-import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
-import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
-import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
-import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
-import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
-import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
-import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
-import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
-import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
-import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
-import static org.lwjgl.glfw.GLFW.glfwInit;
-import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
-import static org.lwjgl.glfw.GLFW.glfwPollEvents;
-import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
-import static org.lwjgl.glfw.GLFW.glfwShowWindow;
-import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
-import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
-import static org.lwjgl.glfw.GLFW.glfwTerminate;
-import static org.lwjgl.glfw.GLFW.glfwWindowHint;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
-import static org.lwjgl.opengl.GL11.GL_VERSION;
-import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glGetString;
-import static org.lwjgl.opengl.GL11.glViewport;
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 import java.nio.IntBuffer;
 import java.util.Map;
+import nl.basmens.events.listeners.EventManager;
+import nl.basmens.events.listeners.KeyEventListener;
+import nl.basmens.events.listeners.MouseEventListener;
+import nl.basmens.events.types.Event;
 import nl.basmens.util.Time;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,16 +28,38 @@ public class PuzzleGame {
 
   private long window;
 
+  private static PuzzleGame puzzleGame;
+
+  public final EventManager<Event> windowEvents = new EventManager<>("open", "close");
+  public final KeyEventListener keyEventListener = new KeyEventListener();
+  public final MouseEventListener mouseEventListener = new MouseEventListener();
+
   private Scene scene;
 
-  // ===============================================================================================
+  // =============================================================================================
+  // Singleton
+  // =============================================================================================
+  private PuzzleGame() {}
+
+  public static PuzzleGame get() {
+    if (puzzleGame == null) {
+      puzzleGame = new PuzzleGame();
+    }
+
+    return puzzleGame;
+  }
+
+  // =============================================================================================
   // Run
-  // ===============================================================================================
+  // =============================================================================================
   public void run() {
     try {
       LOGGER.info("Main method");
       init();
+      windowEvents.notify(new Event("open"));
+
       loop();
+      windowEvents.notify(new Event("close"));
 
       glfwFreeCallbacks(window);
       glfwDestroyWindow(window);
@@ -74,11 +71,10 @@ public class PuzzleGame {
     }
   }
 
-  // ===============================================================================================
+  // =============================================================================================
   // Init
-  // ===============================================================================================
+  // =============================================================================================
   private void init() {
-
     // ============================================================
     // Set log4j error callback
     // ============================================================
@@ -141,14 +137,13 @@ public class PuzzleGame {
           (vidmode.height() - height.get(0)) / 2);
     }
 
-    // Close the window when 'esc' is pressed
-    glfwSetKeyCallback(window,
-        (long callBackWindow, int key, int scancode, int action, int mods) -> {
-          if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-            glfwSetWindowShouldClose(callBackWindow, true);
-          }
-        });
-
+    // ============================================================
+    // Set event callbacks
+    // ============================================================
+    glfwSetKeyCallback(window, keyEventListener::keyCallBack);
+    glfwSetCursorPosCallback(window, mouseEventListener::mousePosCallBack);
+    glfwSetMouseButtonCallback(window, mouseEventListener::mouseButtonCallback);
+    glfwSetScrollCallback(window, mouseEventListener::mouseScrollCallback);
     glfwMakeContextCurrent(window);
 
     // Enable v-sync
@@ -162,7 +157,7 @@ public class PuzzleGame {
     scene = new Scene();
   }
 
-  // ===============================================================================================
+  // =============================================================================================
   // Loop
   // ===============================================================================================
   private void loop() throws Exception {
@@ -206,6 +201,6 @@ public class PuzzleGame {
   // Main
   // ===============================================================================================
   public static void main(String[] args) {
-    new PuzzleGame().run();
+    PuzzleGame.get().run();
   }
 }

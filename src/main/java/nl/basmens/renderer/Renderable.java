@@ -1,7 +1,7 @@
 package nl.basmens.renderer;
 
-import org.joml.Vector3f;
+import java.nio.ByteBuffer;
 
 public interface Renderable {
-    Vector3f getColor();
+  void getData(ByteBuffer data);
 }

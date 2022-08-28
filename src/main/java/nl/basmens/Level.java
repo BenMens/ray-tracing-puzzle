@@ -46,7 +46,7 @@ public class Level {
       data.putFloat(color.x);
       data.putFloat(color.y);
       data.putFloat(color.z);
-      data.putFloat(1f);
+      data.putFloat(1F);
     }
   }
 

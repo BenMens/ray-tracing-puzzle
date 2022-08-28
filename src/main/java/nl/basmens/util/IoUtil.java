@@ -54,11 +54,12 @@ public final class IoUtil {
         try (SeekableByteChannel fc = Files.newByteChannel(path)) {
           buffer = BufferUtils.createByteBuffer((int) fc.size() + 1);
           while (fc.read(buffer) != -1) {
-            ;
+            // Wait
           }
         }
       } else {
-        try (InputStream source = IoUtil.class.getClassLoader().getResourceAsStream(resource);
+        try (InputStream source = 
+            Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
             ReadableByteChannel rbc = Channels.newChannel(source)) {
           buffer = BufferUtils.createByteBuffer(bufferSize);
 
@@ -82,5 +83,5 @@ public final class IoUtil {
     }
 
   }
-
+  
 }

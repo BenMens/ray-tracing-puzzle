@@ -23,12 +23,12 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.APIUtil;
 import org.lwjgl.system.MemoryStack;
 
-public class PuzzleGame {
+public final class PuzzleGame {
   private static final Logger LOGGER = LogManager.getLogger(PuzzleGame.class);
 
-  private long window;
-
   private static PuzzleGame puzzleGame;
+
+  private long window;
 
   public final EventManager<Event> windowEvents = new EventManager<>("open", "close");
   public final KeyEventListener keyEventListener = new KeyEventListener();
@@ -79,7 +79,7 @@ public class PuzzleGame {
     // Set log4j error callback
     // ============================================================
     glfwSetErrorCallback(new GLFWErrorCallback() {
-      private static Map<Integer, String> ERROR_CODES = APIUtil
+      private static Map<Integer, String> errorCodes = APIUtil
           .apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
 
       @Override
@@ -88,7 +88,7 @@ public class PuzzleGame {
 
         String msg = getDescription(description);
 
-        errMsg.append("[LWJGL] " + ERROR_CODES.get(error) + " error\n");
+        errMsg.append("[LWJGL] " + errorCodes.get(error) + " error\n");
         errMsg.append("Description : " + msg + "\n");
         errMsg.append("Stacktrace  : ");
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();

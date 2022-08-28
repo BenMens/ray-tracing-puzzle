@@ -23,6 +23,9 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.APIUtil;
 import org.lwjgl.system.MemoryStack;
 
+/**
+ * A puzzle game with puzzels that are based on shaders that use ray-tracing.
+ */
 public class PuzzleGame {
   private static final Logger LOGGER = LogManager.getLogger(PuzzleGame.class);
 
@@ -167,7 +170,7 @@ public class PuzzleGame {
 
     scene.init();
 
-    double beginTime = Time.getTime();
+    double beginTime = Time.getTimeSinceProgramStart();
     double endTime;
     double deltaTime = -1;
 
@@ -191,7 +194,7 @@ public class PuzzleGame {
 
       glfwSwapBuffers(window);
 
-      endTime = Time.getTime();
+      endTime = Time.getTimeSinceProgramStart();
       deltaTime = endTime - beginTime;
       beginTime = endTime;
     }

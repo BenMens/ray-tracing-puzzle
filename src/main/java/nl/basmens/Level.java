@@ -14,12 +14,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
 
+/**
+ * Represends a level in the game.
+ */
 public class Level {
   private static final Logger LOGGER = LogManager.getLogger(Level.class);
 
   private Triangle triangle;
 
-  // TODO replace ugly code for testing
   static class Triangle implements Renderable {
     private double time;
     private Vector3f color = new Vector3f(0);
@@ -80,9 +82,13 @@ public class Level {
         .info("Mouse scroll " + event.getScrollX() + ", " + event.getScrollY()));
   }
 
-  // ===============================================================================================
-  // Update
-  // ===============================================================================================
+  
+  /** 
+   * Update the level based on elapsed time.
+   *
+   * @param deltaTime Time sinse last call in seconds.
+   * 
+   */
   public void update(double deltaTime) {
     triangle.update(deltaTime);
   }

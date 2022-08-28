@@ -5,6 +5,7 @@
     "java.checkstyle.properties": {
     },
     "java.checkstyle.version": "10.3.2",
-    "java.inlayHints.parameterNames.enabled": "none"
+    "java.inlayHints.parameterNames.enabled": "none",
+    "maven.view": "hierarchical"
 
 }

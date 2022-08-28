@@ -17,6 +17,9 @@ import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
+/**
+ * Rendes all registerd renderables using one of the available shaders.
+ */
 public class Renderer {
   private static final Logger LOGGER = LogManager.getLogger(Renderer.class);
 

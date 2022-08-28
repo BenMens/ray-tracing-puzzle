@@ -4,6 +4,9 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+/**
+ * Camera logic.
+ */
 public class Camera {
   private static final Vector3f axisX = new Vector3f(1, 0, 0);
   private static final Vector3f axisY = new Vector3f(0, 1, 0);

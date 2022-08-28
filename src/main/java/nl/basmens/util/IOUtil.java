@@ -19,6 +19,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
 
+/**
+ * Utilities for reading resources into ByteBuffers.
+ */
 public final class IoUtil {
   private static final Logger LOGGER = LogManager.getLogger(IoUtil.class);
 

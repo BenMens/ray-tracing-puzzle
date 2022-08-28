@@ -2,6 +2,9 @@ package nl.basmens;
 
 import nl.basmens.renderer.Renderer;
 
+/**
+ * TODO: describe the goal of this class.
+ */
 public class Scene {
 
   private Renderer renderer;

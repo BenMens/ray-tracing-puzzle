@@ -45,7 +45,7 @@ public class Renderer {
   // ===============================================================================================
   public Renderer() {
     renderables = new ArrayList<>();
-    camera = new Camera(0.7f);
+    camera = new Camera(0.7F);
   }
 
   // ===============================================================================================
@@ -108,21 +108,21 @@ public class Renderer {
   // ===============================================================================================
   // Shader compilation
   // ===============================================================================================
-  private void printShaderInfoLog(int obj) {
+  private static void printShaderInfoLog(int obj) {
     int infologLength = glGetShaderi(obj, GL_INFO_LOG_LENGTH);
     if (infologLength > 0) {
       LOGGER.trace("Shader info: {}", glGetShaderInfoLog(obj));
     }
   }
 
-  private void printProgramInfoLog(int obj) {
+  private static void printProgramInfoLog(int obj) {
     int infologLength = glGetProgrami(obj, GL_INFO_LOG_LENGTH);
     if (infologLength > 0) {
       LOGGER.trace("Program info: {}", glGetProgramInfoLog(obj));
     }
   }
 
-  private void compileShader(int shader, ByteBuffer code) {
+  private static void compileShader(int shader, ByteBuffer code) {
     try (MemoryStack stack = stackPush()) {
       glShaderSource(shader, stack.pointers(code), stack.ints(code.remaining()));
       glCompileShader(shader);
@@ -134,7 +134,7 @@ public class Renderer {
     }
   }
 
-  private int compileShaderProgram(int v, int f) {
+  private static int compileShaderProgram(int v, int f) {
     int p = glCreateProgram();
 
     glAttachShader(p, v);
@@ -155,21 +155,21 @@ public class Renderer {
 
   void createVao() {
     FloatBuffer pb = BufferUtils.createFloatBuffer(6 * 3);
-    pb.put(-1f).put(-1f).put(0f);
-    pb.put(1f).put(-1f).put(0f);
-    pb.put(-1).put(1f).put(0f);
-    pb.put(1f).put(-1f).put(0f);
-    pb.put(-1f).put(1f).put(0f);
-    pb.put(1).put(1f).put(0f);
+    pb.put(-1F).put(-1F).put(0F);
+    pb.put(1F).put(-1F).put(0F);
+    pb.put(-1).put(1F).put(0F);
+    pb.put(1F).put(-1F).put(0F);
+    pb.put(-1F).put(1F).put(0F);
+    pb.put(1).put(1F).put(0F);
     pb.flip();
 
     FloatBuffer cb = BufferUtils.createFloatBuffer(6 * 4);
-    cb.put(1f).put(0f).put(0f).put(1.0f);
-    cb.put(0f).put(1f).put(0f).put(1.0f);
-    cb.put(0f).put(0f).put(1f).put(1.0f);
-    cb.put(0f).put(1f).put(0f).put(1.0f);
-    cb.put(0f).put(0f).put(1f).put(1.0f);
-    cb.put(1f).put(1f).put(1f).put(1.0f);
+    cb.put(1F).put(0F).put(0F).put(1.0F);
+    cb.put(0F).put(1F).put(0F).put(1.0F);
+    cb.put(0F).put(0F).put(1F).put(1.0F);
+    cb.put(0F).put(1F).put(0F).put(1.0F);
+    cb.put(0F).put(0F).put(1F).put(1.0F);
+    cb.put(1F).put(1F).put(1F).put(1.0F);
     cb.flip();
 
     vao = glGenVertexArrays();
@@ -208,35 +208,35 @@ public class Renderer {
         r.getData(sb);
       }
       sb.flip();
-  
+
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer);
       glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-  
+
       glUseProgram(this.shaderPrograms.get("shader1"));
-  
+
       Vector3f position = camera.getPosition();
       glUniform3f(CAMERA_POSITION_UNIFORM_LOCATION, position.x, position.y, position.z);
-  
+
       Vector3f direction = camera.getDirection();
       glUniform3f(CAMERA_DIRECTION_UNIFORM_LOCATION, direction.x, direction.y, direction.z);
-  
+
       glUniform1f(CAMERA_FOV_UNIFORM_LOCATION, camera.getFov());
-  
+
       FloatBuffer matBuffer = stack.mallocFloat(16);
-  
+
       camera.getPointCameraMatrix().get(matBuffer);
       glUniformMatrix4fv(CAMERA_POINT_MATRIX_UNIFORM_LOCATION, false, matBuffer);
-  
+
       camera.getVectorCameraMatrix().get(matBuffer);
       glUniformMatrix4fv(CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION, false, matBuffer);
-  
+
       glBindVertexArray(vao);
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, shaderBuffer);
-  
+
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glDrawArrays(GL_TRIANGLES, 0, 6);
-  
+
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, 0);
       glBindVertexArray(0);
       glUseProgram(0);

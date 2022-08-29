@@ -65,7 +65,7 @@ public class TestLevel extends AbstractLevel {
     source.getWindowEventDispatcher().register("close",
         (Event event) -> LOGGER.info("Close window event received"));
 
-    source.getKeyEventListener().register(GLFW_KEY_W, (KeyEvent event) -> {
+    source.getKeyEventDispatcher().register(GLFW_KEY_W, (KeyEvent event) -> {
       if (event.getAction() == GLFW_PRESS) {
         LOGGER.info("The 'w' key has been pressed");
       } else if (event.getAction() == GLFW_RELEASE) {
@@ -74,13 +74,13 @@ public class TestLevel extends AbstractLevel {
         LOGGER.info("Unknown action with 'w'");
       }
     });
-    source.getMouseEventListener().register("move", (MouseEvent event) -> {
+    source.getMouseEventDispatcher().register("move", (MouseEvent event) -> {
       LOGGER.info("MouseX moved from " + event.getPrevX() + " to " + event.getPosX());
       LOGGER.info("MouseY moved from " + event.getPrevY() + " to " + event.getPosY());
     });
-    source.getMouseEventListener().register("click", (MouseEvent event) -> LOGGER.info(
+    source.getMouseEventDispatcher().register("click", (MouseEvent event) -> LOGGER.info(
         "Mouse click " + event.getButton() + " at " + event.getPosX() + ", " + event.getPosY()));
-    source.getMouseEventListener().register("scroll", (MouseEvent event) -> LOGGER
+    source.getMouseEventDispatcher().register("scroll", (MouseEvent event) -> LOGGER
         .info("Mouse scroll " + event.getScrollX() + ", " + event.getScrollY()));
   }
 

@@ -9,8 +9,8 @@ import static org.lwjgl.system.MemoryUtil.*;
 import java.nio.IntBuffer;
 import java.util.Map;
 import nl.basmens.events.listeners.EventDispatcher;
-import nl.basmens.events.listeners.KeyEventListener;
-import nl.basmens.events.listeners.MouseEventListener;
+import nl.basmens.events.listeners.KeyEventDispatcher;
+import nl.basmens.events.listeners.MouseEventDispatcher;
 import nl.basmens.events.sources.GlfwEventSource;
 import nl.basmens.events.sources.GlfwEventSources;
 import nl.basmens.events.types.Event;
@@ -33,9 +33,9 @@ public class PuzzleGame implements GlfwEventSource {
 
   private long window;
 
-  public final EventDispatcher<Event> windowEvents = new EventDispatcher<>("open", "close");
-  public final KeyEventListener keyEventListener = new KeyEventListener();
-  public final MouseEventListener mouseEventListener = new MouseEventListener();
+  public final EventDispatcher<Event> windowEventsDispatcher = new EventDispatcher<>("open", "close");
+  public final KeyEventDispatcher keyEventDispatcher = new KeyEventDispatcher();
+  public final MouseEventDispatcher mouseEventDispatcher = new MouseEventDispatcher();
 
   private AbstractLevel level;
   private Player player;
@@ -57,10 +57,10 @@ public class PuzzleGame implements GlfwEventSource {
     try {
       LOGGER.info("Main method");
       init();
-      windowEvents.notify(new Event("open"));
+      windowEventsDispatcher.notify(new Event("open"));
 
       loop();
-      windowEvents.notify(new Event("close"));
+      windowEventsDispatcher.notify(new Event("close"));
 
       glfwFreeCallbacks(window);
       glfwDestroyWindow(window);
@@ -141,10 +141,10 @@ public class PuzzleGame implements GlfwEventSource {
     // ============================================================
     // Set event callbacks
     // ============================================================
-    glfwSetKeyCallback(window, keyEventListener::keyCallBack);
-    glfwSetCursorPosCallback(window, mouseEventListener::mousePosCallBack);
-    glfwSetMouseButtonCallback(window, mouseEventListener::mouseButtonCallback);
-    glfwSetScrollCallback(window, mouseEventListener::mouseScrollCallback);
+    glfwSetKeyCallback(window, keyEventDispatcher::keyCallBack);
+    glfwSetCursorPosCallback(window, mouseEventDispatcher::mousePosCallBack);
+    glfwSetMouseButtonCallback(window, mouseEventDispatcher::mouseButtonCallback);
+    glfwSetScrollCallback(window, mouseEventDispatcher::mouseScrollCallback);
     glfwMakeContextCurrent(window);
 
     // Enable v-sync
@@ -206,15 +206,15 @@ public class PuzzleGame implements GlfwEventSource {
   // Getters and setters
   // ===============================================================================================
   public EventDispatcher<Event> getWindowEventDispatcher() {
-    return windowEvents;
+    return windowEventsDispatcher;
   }
 
-  public KeyEventListener getKeyEventListener() {
-    return keyEventListener;
+  public KeyEventDispatcher getKeyEventDispatcher() {
+    return keyEventDispatcher;
   }
 
-  public MouseEventListener getMouseEventListener() {
-    return mouseEventListener;
+  public MouseEventDispatcher getMouseEventDispatcher() {
+    return mouseEventDispatcher;
   }
 
   // ===============================================================================================

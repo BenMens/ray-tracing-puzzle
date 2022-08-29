@@ -5,13 +5,10 @@ import nl.basmens.events.sources.LevelEventSource;
 import nl.basmens.events.types.Event;
 import nl.basmens.renderer.Camera;
 import nl.basmens.renderer.Renderer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractLevel implements LevelEventSource {
-  private static final Logger LOGGER = LogManager.getLogger(AbstractLevel.class);
 
-  public final EventDispatcher<Event> levelEvents = new EventDispatcher<>("win", "lose");
+  public final EventDispatcher<Event> levelEventDispatcher = new EventDispatcher<>("win", "lose");
 
   private Renderer renderer;
 
@@ -48,7 +45,7 @@ public abstract class AbstractLevel implements LevelEventSource {
   // Getters and setters
   // ===============================================================================================
   public EventDispatcher<Event> getLevelEventDispatcher() {
-    return levelEvents;
+    return levelEventDispatcher;
   }
 
   public Renderer getRenderer() {

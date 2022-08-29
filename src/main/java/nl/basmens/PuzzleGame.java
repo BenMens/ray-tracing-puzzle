@@ -33,9 +33,12 @@ public class PuzzleGame implements GlfwEventSource {
 
   private long window;
 
-  public final EventDispatcher<Event> windowEventsDispatcher = new EventDispatcher<>("open", "close");
-  public final KeyEventDispatcher keyEventDispatcher = new KeyEventDispatcher();
-  public final MouseEventDispatcher mouseEventDispatcher = new MouseEventDispatcher();
+  public final EventDispatcher<Event> windowEventsDispatcher =
+      new EventDispatcher<>("open", "close");
+  public final KeyEventDispatcher keyEventDispatcher =
+      new KeyEventDispatcher();
+  public final MouseEventDispatcher mouseEventDispatcher =
+      new MouseEventDispatcher();
 
   private AbstractLevel level;
   private Player player;

@@ -7,16 +7,21 @@ import nl.basmens.events.types.Event;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// Guide: https://refactoring.guru/design-patterns/observer/java/example
-public class EventManager<E extends Event> {
-  private static final Logger LOGGER = LogManager.getLogger(EventManager.class);
+/**
+ * Generic event dispatcher.
+ * <p>
+ * Gui1de: https://refactoring.guru/design-patterns/observer/java/example
+ * </p>
+ */
+public class EventDispatcher<E extends Event> {
+  private static final Logger LOGGER = LogManager.getLogger(EventDispatcher.class);
 
   private Map<String, ArrayList<Observer<E>>> listeners = new HashMap<>();
 
   // ===============================================================================================
   // Constructor
   // ===============================================================================================
-  public EventManager(String... eventTypes) {
+  public EventDispatcher(String... eventTypes) {
     for (String event : eventTypes) {
       listeners.put(event, new ArrayList<>());
     }

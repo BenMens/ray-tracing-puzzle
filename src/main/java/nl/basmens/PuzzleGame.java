@@ -8,10 +8,15 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 import java.nio.IntBuffer;
 import java.util.Map;
-import nl.basmens.events.listeners.EventManager;
-import nl.basmens.events.listeners.KeyEventListener;
-import nl.basmens.events.listeners.MouseEventListener;
+import nl.basmens.events.listeners.EventDispatcher;
+import nl.basmens.events.listeners.KeyEventDispatcher;
+import nl.basmens.events.listeners.MouseEventDispatcher;
+import nl.basmens.events.sources.GlfwEventSource;
+import nl.basmens.events.sources.GlfwEventSources;
 import nl.basmens.events.types.Event;
+import nl.basmens.game.Player;
+import nl.basmens.game.levels.AbstractLevel;
+import nl.basmens.game.levels.TestLevel;
 import nl.basmens.util.Time;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,30 +28,29 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.APIUtil;
 import org.lwjgl.system.MemoryStack;
 
-public final class PuzzleGame {
+public class PuzzleGame implements GlfwEventSource {
   private static final Logger LOGGER = LogManager.getLogger(PuzzleGame.class);
-
-  private static PuzzleGame puzzleGame;
 
   private long window;
 
-  public final EventManager<Event> windowEvents = new EventManager<>("open", "close");
-  public final KeyEventListener keyEventListener = new KeyEventListener();
-  public final MouseEventListener mouseEventListener = new MouseEventListener();
+  public final EventDispatcher<Event> windowEventsDispatcher =
+      new EventDispatcher<>("open", "close");
+  public final KeyEventDispatcher keyEventDispatcher =
+      new KeyEventDispatcher();
+  public final MouseEventDispatcher mouseEventDispatcher =
+      new MouseEventDispatcher();
 
-  private Scene scene;
+  private AbstractLevel level;
+  private Player player;
 
   // =============================================================================================
-  // Singleton
+  // Constructor
   // =============================================================================================
-  private PuzzleGame() {}
+  public PuzzleGame() {
+    GlfwEventSources.get().setEventSource(this);
 
-  public static PuzzleGame get() {
-    if (puzzleGame == null) {
-      puzzleGame = new PuzzleGame();
-    }
-
-    return puzzleGame;
+    level = new TestLevel();
+    player = new Player();
   }
 
   // =============================================================================================
@@ -56,10 +60,10 @@ public final class PuzzleGame {
     try {
       LOGGER.info("Main method");
       init();
-      windowEvents.notify(new Event("open"));
+      windowEventsDispatcher.notify(new Event("open"));
 
       loop();
-      windowEvents.notify(new Event("close"));
+      windowEventsDispatcher.notify(new Event("close"));
 
       glfwFreeCallbacks(window);
       glfwDestroyWindow(window);
@@ -74,7 +78,7 @@ public final class PuzzleGame {
   // =============================================================================================
   // Init
   // =============================================================================================
-  private void init() {
+  private void init() throws Exception {  // TODO throw specific exeption
     // ============================================================
     // Set log4j error callback
     // ============================================================
@@ -140,10 +144,10 @@ public final class PuzzleGame {
     // ============================================================
     // Set event callbacks
     // ============================================================
-    glfwSetKeyCallback(window, keyEventListener::keyCallBack);
-    glfwSetCursorPosCallback(window, mouseEventListener::mousePosCallBack);
-    glfwSetMouseButtonCallback(window, mouseEventListener::mouseButtonCallback);
-    glfwSetScrollCallback(window, mouseEventListener::mouseScrollCallback);
+    glfwSetKeyCallback(window, keyEventDispatcher::keyCallBack);
+    glfwSetCursorPosCallback(window, mouseEventDispatcher::mousePosCallBack);
+    glfwSetMouseButtonCallback(window, mouseEventDispatcher::mouseButtonCallback);
+    glfwSetScrollCallback(window, mouseEventDispatcher::mouseScrollCallback);
     glfwMakeContextCurrent(window);
 
     // Enable v-sync
@@ -151,22 +155,25 @@ public final class PuzzleGame {
 
     glfwShowWindow(window);
 
+
     // ============================================================
-    // Scene creation
+    // Create capabilities
     // ============================================================
-    scene = new Scene();
+    GL.createCapabilities();
+
+    LOGGER.trace("GL version is {}", glGetString(GL_VERSION));
+
+    // ============================================================
+    // Initiation of game objects
+    // ============================================================
+    level.init();
+    player.init();
   }
 
   // =============================================================================================
   // Loop
   // ===============================================================================================
-  private void loop() throws Exception {
-    GL.createCapabilities();
-
-    LOGGER.trace("GL version is {}", glGetString(GL_VERSION));
-
-    scene.init();
-
+  private void loop() {
     double beginTime = Time.getTime();
     double endTime;
     double deltaTime = -1;
@@ -177,6 +184,10 @@ public final class PuzzleGame {
       // Poll events
       glfwPollEvents();
 
+      if (deltaTime >= 0) {
+        level.update(deltaTime);
+      }
+
       IntBuffer w = BufferUtils.createIntBuffer(4);
       IntBuffer h = BufferUtils.createIntBuffer(4);
       glfwGetWindowSize(window, w, h);
@@ -185,10 +196,7 @@ public final class PuzzleGame {
 
       glViewport(0, 0, width, height);
 
-      if (deltaTime >= 0) {
-        scene.update(deltaTime);
-      }
-
+      level.render(player.getCamera());
       glfwSwapBuffers(window);
 
       endTime = Time.getTime();
@@ -198,9 +206,24 @@ public final class PuzzleGame {
   }
 
   // ===============================================================================================
+  // Getters and setters
+  // ===============================================================================================
+  public EventDispatcher<Event> getWindowEventDispatcher() {
+    return windowEventsDispatcher;
+  }
+
+  public KeyEventDispatcher getKeyEventDispatcher() {
+    return keyEventDispatcher;
+  }
+
+  public MouseEventDispatcher getMouseEventDispatcher() {
+    return mouseEventDispatcher;
+  }
+
+  // ===============================================================================================
   // Main
   // ===============================================================================================
   public static void main(String[] args) {
-    PuzzleGame.get().run();
+    new PuzzleGame().run();
   }
 }

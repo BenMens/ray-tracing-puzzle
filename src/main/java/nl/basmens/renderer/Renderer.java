@@ -35,14 +35,12 @@ public class Renderer {
 
   private int vao;
   private int shaderBuffer;
-  private Camera camera;
 
   // ===============================================================================================
   // Constructor
   // ===============================================================================================
   public Renderer() {
     renderables = new ArrayList<>();
-    camera = new Camera(0.7F);
   }
 
   // ===============================================================================================
@@ -70,7 +68,7 @@ public class Renderer {
   // ===============================================================================================
   // Initialization
   // ===============================================================================================
-  public void init() throws Exception {
+  public void init() throws Exception {  // TODO make specific exeption
     LOGGER.trace("reading vertex shader");
 
     ByteBuffer vs = IoUtil.ioResourceToByteBuffer("shaders/vertex/vertex.vert", 4096);
@@ -197,7 +195,7 @@ public class Renderer {
   // ===============================================================================================
   // Render
   // ===============================================================================================
-  public void render() {
+  public void render(Camera camera) {
 
     try (MemoryStack stack = stackPush()) {
       ByteBuffer sb = stack.malloc(1 * 4 * 4);
@@ -239,14 +237,5 @@ public class Renderer {
       glUseProgram(0);
     }
   }
-
-  public Camera getCamera() {
-    return camera;
-  }
-
-  public void setCamera(Camera camera) {
-    this.camera = camera;
-  }
-
 
 }

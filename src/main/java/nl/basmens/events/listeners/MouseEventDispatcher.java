@@ -2,8 +2,8 @@ package nl.basmens.events.listeners;
 
 import nl.basmens.events.types.MouseEvent;
 
-public class MouseEventListener {
-  private EventManager<MouseEvent> eventManager;
+public class MouseEventDispatcher {
+  private EventDispatcher<MouseEvent> eventDispatcher;
 
   private double prevX;
   private double prevY;
@@ -15,8 +15,8 @@ public class MouseEventListener {
   // ===============================================================================================
   // Constructor
   // ===============================================================================================
-  public MouseEventListener() {
-    eventManager = new EventManager<>("click", "scroll", "move");
+  public MouseEventDispatcher() {
+    eventDispatcher = new EventDispatcher<>("click", "scroll", "move");
 
     prevX = 0;
     prevY = 0;
@@ -27,7 +27,7 @@ public class MouseEventListener {
   // ===============================================================================================
   public void mousePosCallBack(long window, double posX, double posY) {
     if (hasInitialMousePos) {
-      eventManager.notify(new MouseEvent("move", posX, posY, prevX, prevY, isDragging));
+      eventDispatcher.notify(new MouseEvent("move", posX, posY, prevX, prevY, isDragging));
     }
 
     prevX = posX;
@@ -42,7 +42,7 @@ public class MouseEventListener {
   // ===============================================================================================
   public void mouseButtonCallback(long window, int button, int action, int mods) {
     if (hasInitialMousePos && button < buttonsPressed.length) {
-      eventManager.notify(new MouseEvent("click", prevX, prevY, button, action, mods));
+      eventDispatcher.notify(new MouseEvent("click", prevX, prevY, button, action, mods));
     }
   }
 
@@ -50,20 +50,20 @@ public class MouseEventListener {
   // MouseScrollCallback
   // ===============================================================================================
   public void mouseScrollCallback(long window, double scrollX, double scrollY) {
-    eventManager.notify(new MouseEvent("scroll", scrollX, scrollY));
+    eventDispatcher.notify(new MouseEvent("scroll", scrollX, scrollY));
   }
 
   // ===============================================================================================
   // Register
   // ===============================================================================================
   public Observer<MouseEvent> register(String eventType, Observer<MouseEvent> observer) {
-    return eventManager.register(eventType, observer);
+    return eventDispatcher.register(eventType, observer);
   }
 
   // ===============================================================================================
   // Unregister
   // ===============================================================================================
   public void unregister(String eventType, Observer<MouseEvent> observer) {
-    eventManager.unregister(eventType, observer);
+    eventDispatcher.unregister(eventType, observer);
   }
 }

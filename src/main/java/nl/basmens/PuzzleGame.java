@@ -26,7 +26,7 @@ import org.lwjgl.system.MemoryStack;
 /**
  * A puzzle game with puzzels that are based on shaders that use ray-tracing.
  */
-public class PuzzleGame {
+public final class PuzzleGame {
   private static final Logger LOGGER = LogManager.getLogger(PuzzleGame.class);
 
   private static PuzzleGame puzzleGame;

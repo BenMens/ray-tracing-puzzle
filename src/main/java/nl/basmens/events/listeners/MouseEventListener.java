@@ -3,7 +3,7 @@ package nl.basmens.events.listeners;
 import nl.basmens.events.types.MouseEvent;
 
 public class MouseEventListener {
-  private EventManager<MouseEvent> eventManager;
+  private EventDispatcher<MouseEvent> eventManager;
 
   private double prevX;
   private double prevY;
@@ -16,7 +16,7 @@ public class MouseEventListener {
   // Constructor
   // ===============================================================================================
   public MouseEventListener() {
-    eventManager = new EventManager<>("click", "scroll", "move");
+    eventManager = new EventDispatcher<>("click", "scroll", "move");
 
     prevX = 0;
     prevY = 0;

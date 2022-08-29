@@ -1,10 +1,12 @@
-package nl.basmens;
+package nl.basmens.game.levels;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import java.nio.ByteBuffer;
+import nl.basmens.events.sources.GlfwEventSource;
+import nl.basmens.events.sources.GlfwEventSources;
 import nl.basmens.events.types.Event;
 import nl.basmens.events.types.KeyEvent;
 import nl.basmens.events.types.MouseEvent;
@@ -14,8 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
 
-public class Level {
-  private static final Logger LOGGER = LogManager.getLogger(Level.class);
+public class TestLevel extends AbstractLevel {
+  private static final Logger LOGGER = LogManager.getLogger(TestLevel.class);
 
   private Triangle triangle;
 
@@ -53,15 +55,17 @@ public class Level {
   // ===============================================================================================
   // Constructor
   // ===============================================================================================
-  public Level(Renderer renderer) {
-    triangle = new Triangle(renderer);
+  public TestLevel() {
+    triangle = new Triangle(getRenderer());
 
-    PuzzleGame.get().windowEvents.register("open",
+    GlfwEventSource source = GlfwEventSources.get().getEventSource();
+
+    source.getWindowEventDispatcher().register("open",
         (Event event) -> LOGGER.info("Open window event received"));
-    PuzzleGame.get().windowEvents.register("close",
+    source.getWindowEventDispatcher().register("close",
         (Event event) -> LOGGER.info("Close window event received"));
 
-    PuzzleGame.get().keyEventListener.register(GLFW_KEY_W, (KeyEvent event) -> {
+    source.getKeyEventListener().register(GLFW_KEY_W, (KeyEvent event) -> {
       if (event.getAction() == GLFW_PRESS) {
         LOGGER.info("The 'w' key has been pressed");
       } else if (event.getAction() == GLFW_RELEASE) {
@@ -70,13 +74,13 @@ public class Level {
         LOGGER.info("Unknown action with 'w'");
       }
     });
-    PuzzleGame.get().mouseEventListener.register("move", (MouseEvent event) -> {
+    source.getMouseEventListener().register("move", (MouseEvent event) -> {
       LOGGER.info("MouseX moved from " + event.getPrevX() + " to " + event.getPosX());
       LOGGER.info("MouseY moved from " + event.getPrevY() + " to " + event.getPosY());
     });
-    PuzzleGame.get().mouseEventListener.register("click", (MouseEvent event) -> LOGGER.info(
+    source.getMouseEventListener().register("click", (MouseEvent event) -> LOGGER.info(
         "Mouse click " + event.getButton() + " at " + event.getPosX() + ", " + event.getPosY()));
-    PuzzleGame.get().mouseEventListener.register("scroll", (MouseEvent event) -> LOGGER
+    source.getMouseEventListener().register("scroll", (MouseEvent event) -> LOGGER
         .info("Mouse scroll " + event.getScrollX() + ", " + event.getScrollY()));
   }
 

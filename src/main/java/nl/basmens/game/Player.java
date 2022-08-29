@@ -1,35 +1,28 @@
-package nl.basmens;
+package nl.basmens.game;
 
-import nl.basmens.renderer.Renderer;
+import nl.basmens.renderer.Camera;
+import org.joml.Vector3f;
 
-public class Scene {
-
-  private Renderer renderer;
-  private Level level;
+public class Player {
+  private Camera camera;
 
 
   // ===============================================================================================
   // Constructor
   // ===============================================================================================
-  public Scene() {
-    renderer = new Renderer();
-    level = new Level(renderer);
-  }
-
+  public Player() {}
 
   // ===============================================================================================
   // Init
   // ===============================================================================================
-  public void init() throws Exception {
-    renderer.init();
+  public void init() {
+    camera = new Camera(new Vector3f(0), new Vector3f(0), 3F);
   }
 
-
   // ===============================================================================================
-  // Update
+  // Getters and setters
   // ===============================================================================================
-  public void update(double deltaTime) {
-    level.update(deltaTime);
-    renderer.render();
+  public Camera getCamera() {
+    return camera;
   }
 }

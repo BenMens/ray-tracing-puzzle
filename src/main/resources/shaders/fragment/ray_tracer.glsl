@@ -19,12 +19,9 @@ uniform ivec2 u_resolution;
 uniform float u_time;
 
 // Camera uniforms
-uniform vec3 u_cameraPosition;
-uniform vec3 u_cameraDirection;
-uniform float u_cameraFOV;
-
 uniform mat4 u_pointCameraMatrix;
 uniform mat3 u_vectorCameraMatrix;
+uniform float u_cameraFOV;
 
 // ==================================================================================================================================================
 // Structs
@@ -256,7 +253,7 @@ void main() {
   vec2 PixelCoordImageSpace = PixelCoordScreenSpace * tan(u_cameraFOV / 2);
   vec3 PixelCoordCameraSpace = vec3(PixelCoordImageSpace.xy, -1);
 
-  vec3 rayOrigin = u_cameraPosition;
+  vec3 rayOrigin = (u_pointCameraMatrix * vec4(0, 0, 0, 1)).xyz;
   vec3 rayDirection = u_vectorCameraMatrix * normalize(PixelCoordCameraSpace);
 
   // ===================================================================================================================

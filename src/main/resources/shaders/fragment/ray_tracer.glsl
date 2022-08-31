@@ -1,4 +1,4 @@
-#version 330 core
+#version 430
 
 // Settings
 const float maxDist = 1200;
@@ -15,13 +15,13 @@ const float EPSILON = 1e-4;
 out vec4 fragColor;
 
 // General uniforms
-uniform ivec2 u_resolution;
+//uniform ivec2 u_resolution;
 uniform float u_time;
 
 // Camera uniforms
-uniform mat4 u_pointCameraMatrix;
-uniform mat3 u_vectorCameraMatrix;
-uniform float u_cameraFOV;
+layout(location = 2) uniform float u_cameraFOV;
+layout(location = 3) uniform mat4 u_pointCameraMatrix;
+layout(location = 4) uniform mat3 u_vectorCameraMatrix;
 
 // ==================================================================================================================================================
 // Structs
@@ -121,6 +121,11 @@ bool intersectSphere(in vec3 origin, in vec3 direction, in vec3 center, in float
 
   vec3 l = center - origin;
 
+  if(dot(l, l) < radius2) {
+    t = -1;
+    return true;
+  }
+
   float tca = dot(l, direction);
   if(tca < 0)
     return false;
@@ -172,7 +177,7 @@ bool intersectTriangle(in vec3 origin, in vec3 direction, in vec3 v0, in vec3 v1
 
   t = dot(v2v1, qvec) * invDet;
 
-  return true;
+  return t >= 0;
 }
 
 // ==================================================================================================================================================
@@ -249,6 +254,7 @@ void main() {
   // ===================================================================================================================
 
   // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
+  vec2 u_resolution = vec2(800, 800);
   vec2 PixelCoordScreenSpace = (2 * gl_FragCoord.xy - u_resolution) / u_resolution.y;
   vec2 PixelCoordImageSpace = PixelCoordScreenSpace * tan(u_cameraFOV / 2);
   vec3 PixelCoordCameraSpace = vec3(PixelCoordImageSpace.xy, -1);

@@ -54,7 +54,7 @@ public class Player {
    * the level.
    */
   public Player() {
-    camera = new Camera(new Vector3f(0), new Vector3f(0), 3F);
+    camera = new Camera(new Vector3f(0, 0, 5), new Vector3f(0), 1F);
   }
 
 

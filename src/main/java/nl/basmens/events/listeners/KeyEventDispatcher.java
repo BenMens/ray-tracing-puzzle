@@ -11,11 +11,11 @@ public class KeyEventDispatcher {
   // Constructor
   // ===============================================================================================
   public KeyEventDispatcher() {
-    String[] events = new String[MAXKEYS];
-    for (int i = 0; i < events.length; i++) {
-      events[i] = Integer.toString(i);
+    String[] eventTypes = new String[MAXKEYS];
+    for (int i = 0; i < eventTypes.length; i++) {
+      eventTypes[i] = Integer.toString(i);
     }
-    eventDispatcher = new EventDispatcher<>(events);
+    eventDispatcher = new EventDispatcher<>(eventTypes);
   }
 
   // ===============================================================================================
@@ -31,14 +31,14 @@ public class KeyEventDispatcher {
   // ===============================================================================================
   // Register
   // ===============================================================================================
-  public Observer<KeyEvent> register(int event, Observer<KeyEvent> observer) {
-    return eventDispatcher.register(Integer.toString(event), observer);
+  public Observer<KeyEvent> register(int eventType, Observer<KeyEvent> observer) {
+    return eventDispatcher.register(Integer.toString(eventType), observer);
   }
 
   // ===============================================================================================
   // Unregister
   // ===============================================================================================
-  public void unregister(int event, Observer<KeyEvent> observer) {
-    eventDispatcher.unregister(Integer.toString(event), observer);
+  public void unregister(int eventType, Observer<KeyEvent> observer) {
+    eventDispatcher.unregister(Integer.toString(eventType), observer);
   }
 }

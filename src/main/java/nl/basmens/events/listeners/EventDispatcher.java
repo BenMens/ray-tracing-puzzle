@@ -22,8 +22,8 @@ public class EventDispatcher<E extends Event> {
   // Constructor
   // ===============================================================================================
   public EventDispatcher(String... eventTypes) {
-    for (String event : eventTypes) {
-      listeners.put(event, new ArrayList<>());
+    for (String e : eventTypes) {
+      listeners.put(e, new ArrayList<>());
     }
   }
 

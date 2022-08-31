@@ -1,15 +1,6 @@
 package nl.basmens.game.levels;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
-
 import java.nio.ByteBuffer;
-import nl.basmens.events.sources.GlfwEventSource;
-import nl.basmens.events.sources.GlfwEventSources;
-import nl.basmens.events.types.Event;
-import nl.basmens.events.types.KeyEvent;
-import nl.basmens.events.types.MouseEvent;
 import nl.basmens.renderer.Renderable;
 import nl.basmens.renderer.Renderer;
 import org.apache.logging.log4j.LogManager;
@@ -59,31 +50,6 @@ public class TestLevel extends AbstractLevel {
   // ===============================================================================================
   public TestLevel() {
     triangle = new Triangle(getRenderer());
-
-    GlfwEventSource source = GlfwEventSources.get().getEventSource();
-
-    source.getWindowEventDispatcher().register("open",
-        (Event event) -> LOGGER.info("Open window event received"));
-    source.getWindowEventDispatcher().register("close",
-        (Event event) -> LOGGER.info("Close window event received"));
-
-    source.getKeyEventDispatcher().register(GLFW_KEY_W, (KeyEvent event) -> {
-      if (event.getAction() == GLFW_PRESS) {
-        LOGGER.info("The 'w' key has been pressed");
-      } else if (event.getAction() == GLFW_RELEASE) {
-        LOGGER.info("The 'w' key has been released");
-      } else {
-        LOGGER.info("Unknown action with 'w'");
-      }
-    });
-    source.getMouseEventDispatcher().register("move", (MouseEvent event) -> {
-      LOGGER.info("MouseX moved from " + event.getPrevX() + " to " + event.getPosX());
-      LOGGER.info("MouseY moved from " + event.getPrevY() + " to " + event.getPosY());
-    });
-    source.getMouseEventDispatcher().register("click", (MouseEvent event) -> LOGGER.info(
-        "Mouse click " + event.getButton() + " at " + event.getPosX() + ", " + event.getPosY()));
-    source.getMouseEventDispatcher().register("scroll", (MouseEvent event) -> LOGGER
-        .info("Mouse scroll " + event.getScrollX() + ", " + event.getScrollY()));
   }
 
   

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import nl.basmens.util.IoUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
@@ -26,8 +25,6 @@ public class Renderer {
   private static final int VERTEX_POSITION_ATTRIBUTE_LOCATION = 0;
   private static final int VERTEX_COLOR_ATTRIBUTE_LOCATION = 1;
   private static final int SHADER_BUFFER_BINDING = 0;
-  private static final int CAMERA_POSITION_UNIFORM_LOCATION = 0;
-  private static final int CAMERA_DIRECTION_UNIFORM_LOCATION = 1;
   private static final int CAMERA_FOV_UNIFORM_LOCATION = 2;
   private static final int CAMERA_POINT_MATRIX_UNIFORM_LOCATION = 3;
   private static final int CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION = 4;
@@ -211,23 +208,17 @@ public class Renderer {
       glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-      glUseProgram(this.shaderPrograms.get("shader1"));
-
-      Vector3f position = camera.getPosition();
-      glUniform3f(CAMERA_POSITION_UNIFORM_LOCATION, position.x, position.y, position.z);
-
-      Vector3f direction = camera.getDirection();
-      glUniform3f(CAMERA_DIRECTION_UNIFORM_LOCATION, direction.x, direction.y, direction.z);
+      glUseProgram(this.shaderPrograms.get("ray_tracer"));
 
       glUniform1f(CAMERA_FOV_UNIFORM_LOCATION, camera.getFov());
 
       FloatBuffer matBuffer = stack.mallocFloat(16);
-
+      
       camera.getPointCameraMatrix().get(matBuffer);
       glUniformMatrix4fv(CAMERA_POINT_MATRIX_UNIFORM_LOCATION, false, matBuffer);
 
       camera.getVectorCameraMatrix().get(matBuffer);
-      glUniformMatrix4fv(CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION, false, matBuffer);
+      glUniformMatrix3fv(CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION, false, matBuffer);
 
       glBindVertexArray(vao);
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, shaderBuffer);

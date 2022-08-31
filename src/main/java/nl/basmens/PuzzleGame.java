@@ -189,6 +189,7 @@ public class PuzzleGame implements GlfwEventSource {
 
       if (deltaTime >= 0) {
         level.update(deltaTime);
+        player.update(deltaTime);
       }
 
       IntBuffer w = BufferUtils.createIntBuffer(4);

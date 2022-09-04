@@ -124,7 +124,7 @@ public class PuzzleGame implements GlfwEventSource {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-    window = glfwCreateWindow(800, 800, "Ray tracing puzzle", NULL, NULL);
+    window = glfwCreateWindow(1600, 900, "Ray tracing puzzle", NULL, NULL);
     if (window == NULL) {
       throw new RuntimeException("Failed to create the GLFW window");
     }
@@ -151,6 +151,7 @@ public class PuzzleGame implements GlfwEventSource {
     glfwSetCursorPosCallback(window, mouseEventDispatcher::mousePosCallBack);
     glfwSetMouseButtonCallback(window, mouseEventDispatcher::mouseButtonCallback);
     glfwSetScrollCallback(window, mouseEventDispatcher::mouseScrollCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwMakeContextCurrent(window);
 
     // Enable v-sync

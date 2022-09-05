@@ -9,9 +9,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 
 public final class FileReaderObj {
-  private static final Pattern PATTERN = Pattern.compile("(v\\b|vt\\b|vn\\b|-?[0-9.]+)");
+  private static final Pattern PATTERN = Pattern.compile("(v\\b|vt\\b|vn\\b|f\\b|-?[0-9.]+)");
 
 
   private FileReaderObj() {
@@ -20,9 +21,10 @@ public final class FileReaderObj {
 
 
   public static void read(String path) throws IOException {
-    ArrayList<Vector3f> v = new ArrayList<>();
-    ArrayList<Vector2f> vt = new ArrayList<>();
-    ArrayList<Vector3f> vn = new ArrayList<>();
+    ArrayList<Vector3f> vertices = new ArrayList<>();
+    ArrayList<Vector2f> verticesT = new ArrayList<>();
+    ArrayList<Vector3f> verticesN = new ArrayList<>();
+    ArrayList<Vector3i> faces = new ArrayList<>();
 
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try (InputStream in = classLoader.getResourceAsStream(path);
@@ -39,13 +41,18 @@ public final class FileReaderObj {
 
         switch (type) {
           case "v":
-            v.add(readVector3f(m));
+            vertices.add(readVector3f(m));
             break;
           case "vt":
-            vt.add(readVector2f(m));
+            verticesT.add(readVector2f(m));
             break;
           case "vn":
-            vn.add(readVector3f(m));
+            verticesN.add(readVector3f(m));
+            break;
+          case "f":
+            faces.add(readVector3i(m));
+            faces.add(readVector3i(m));
+            faces.add(readVector3i(m));
             break;
           default:
             break;
@@ -53,16 +60,28 @@ public final class FileReaderObj {
       }
     }
 
-    for (Vector3f x : v) {
+    int[] f = new int[faces.size() * 3];
+    for (int i = 0; i < f.length; i += 3) {
+      f[i + 0] = faces.get(i / 3).x;
+      f[i + 1] = faces.get(i / 3).y;
+      f[i + 2] = faces.get(i / 3).z;
+    }
+
+    for (Vector3f x : vertices) {
       System.out.println(x.x + ", " + x.y + ", " + x.z);
     }
     System.out.println();
-    for (Vector2f x : vt) {
+    for (Vector2f x : verticesT) {
       System.out.println(x.x + ", " + x.y);
     }
     System.out.println();
-    for (Vector3f x : vn) {
+    for (Vector3f x : verticesN) {
       System.out.println(x.x + ", " + x.y + ", " + x.z);
+    }
+    System.out.println();
+    for (int i = 0; i < f.length; i += 9) {
+      System.out.println(f[i] + "/" + f[i + 1] + "/" + f[i + 2] + ", " + f[i + 3] + "/" + f[i + 4]
+          + "/" + f[i + 5] + ", " + f[i + 6] + "/" + f[i + 7] + "/" + f[i + 8]);
     }
   }
 
@@ -89,11 +108,22 @@ public final class FileReaderObj {
     return new Vector3f(numbers);
   }
 
+  private static Vector3i readVector3i(Matcher m) {
+    int[] numbers = new int[3];
+
+    for (int i = 0; i < numbers.length; i++) {
+      m.find();
+      numbers[i] = Integer.parseInt(m.group());
+    }
+
+    return new Vector3i(numbers);
+  }
+
 
   public static void main(String[] args) {
     try {
       read("obj-files/test.obj");
-    } catch(IOException e) {
+    } catch (IOException e) {
       System.out.println("AHHHHHHH");
     }
   }

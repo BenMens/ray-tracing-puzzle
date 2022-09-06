@@ -11,11 +11,11 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
-public final class FileReaderObj {
+public final class ObjFileReader {
   private static final Pattern PATTERN = Pattern.compile("(v\\b|vt\\b|vn\\b|f\\b|-?[0-9.]+)");
 
 
-  private FileReaderObj() {
+  private ObjFileReader() {
     // Prevent initialization
   }
 
@@ -117,18 +117,5 @@ public final class FileReaderObj {
     }
 
     return new Vector3i(numbers);
-  }
-
-
-  public static void main(String[] args) {
-    try {
-      //read("obj-files/test.obj");
-      read("obj-files/donut_low.obj");
-      //read("obj-files/donut_medium.obj");
-      //read("obj-files/donut_high.obj");
-      //read("obj-files/donut_ultra.obj");
-    } catch (IOException e) {
-      System.out.println("AHHHHHHH");
-    }
   }
 }

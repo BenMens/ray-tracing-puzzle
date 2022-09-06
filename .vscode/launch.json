@@ -6,13 +6,6 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch FileReaderObj",
-            "request": "launch",
-            "mainClass": "nl.basmens.util.FileReaderObj",
-            "projectName": "ray-tracing-puzzle"
-        },
-        {
-            "type": "java",
             "name": "Launch Puzzle",
             "request": "launch",
             "mainClass": "nl.basmens.PuzzleGame",

@@ -6,6 +6,9 @@ import nl.basmens.events.types.Event;
 import nl.basmens.renderer.Camera;
 import nl.basmens.renderer.Renderer;
 
+/**
+ * Abstract game level that is the basis for concrete level objects.
+ */
 public abstract class AbstractLevel implements LevelEventSource {
 
   public final EventDispatcher<Event> levelEventDispatcher = new EventDispatcher<>("win", "lose");

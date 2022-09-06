@@ -16,4 +16,7 @@ public interface Mesh {
 
   ShaderDataSource<IntBuffer> getIndicesData();
   long getIndicesCount();
+
+  MeshInstance getMeshInstance();
+  long getMeshInstanceCount();
 }

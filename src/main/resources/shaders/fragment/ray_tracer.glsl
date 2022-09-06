@@ -28,11 +28,10 @@ layout(location = 4) uniform mat3 u_vectorCameraMatrix;
 // Structs
 // ==================================================================================================================================================
 struct Mesh {
+  vec4 center;
   int offset;
   int count;
   int textureIndex;
-
-  vec3 center;
   float radius2;
 };
 
@@ -81,13 +80,13 @@ layout(std430, binding = 3) buffer indicesBufferLayout {
   int indices[];
 };
 
+layout(std430, binding = 4) buffer meshesBufferLayout {
+  Mesh meshes[];
+};
+
 // ==================================================================================================================================================
 // Scene
 // ==================================================================================================================================================
-
-Mesh[1] meshes = Mesh[1](
-  Mesh(0, 3, 0, vec3(0), 19)
-);
 
 const Light lights[1] = Light[1](
   //Light(vec3(0, 5, 0), vec3(1, 1, 1), 130, true)
@@ -186,11 +185,11 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
   float t, u, v;
 
   // Loop through the meshes
-  for(int i = 0; i < meshes.length; i++) {
+  for(int i = 0; i < meshes.length(); i++) {
     Mesh m = meshes[i];
 
     // If ray comes close to the mesh, check intersection with mesh
-    if (intersectSphere(origin, direction, m.center, m.radius2, t) && t < tNear) {
+    if (intersectSphere(origin, direction, m.center.xyz, m.radius2, t) && t < tNear) {
 
       // Loop through all the triangles making up the mesh
       for (int j = 0; j < m.count; j++) {

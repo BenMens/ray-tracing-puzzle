@@ -2,17 +2,19 @@ package nl.basmens.game;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_V;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 import nl.basmens.events.listeners.KeyEventDispatcher;
+import nl.basmens.events.listeners.MouseEventDispatcher;
 import nl.basmens.events.listeners.Observer;
 import nl.basmens.events.sources.GlfwEventSources;
 import nl.basmens.events.types.KeyEvent;
+import nl.basmens.events.types.MouseEvent;
 import nl.basmens.renderer.Camera;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +31,9 @@ public class Player {
   private static int moveLeftKey = GLFW_KEY_A;
   private static int moveRightKey = GLFW_KEY_D;
   private static int moveUpKey = GLFW_KEY_SPACE;
-  private static int moveDownKey = GLFW_KEY_V;
+  private static int moveDownKey = GLFW_KEY_LEFT_SHIFT;
+
+  private Camera camera;
 
   private Observer<KeyEvent> moveForwardObserver;
   private Observer<KeyEvent> moveBackwardObserver;
@@ -44,10 +48,13 @@ public class Player {
   private boolean moveRight;
   private boolean moveUp;
   private boolean moveDown;
-  private Camera camera;
+  private double turnX;
+  private double turnY;
 
-  private float cameraSpeed = 3;
-
+  private double cameraSpeed = 3;
+  private double cameraSensitivityX = 0.003F;
+  private double cameraSensitivityY = 0.003F;
+  
 
   /**
    * Constructs a player object that is the bridge between the human player and
@@ -68,6 +75,7 @@ public class Player {
     registerMoveRight(moveRightKey);
     registerMoveUp(moveUpKey);
     registerMoveDown(moveDownKey);
+    registerTurn();
   }
 
   // ===============================================================================================
@@ -106,6 +114,16 @@ public class Player {
     if (moveDown) {
       pos.y -= cameraSpeed * deltaTime;
     }
+
+    dir.y += turnX * cameraSensitivityX;
+    dir.x += turnY * cameraSensitivityY;
+    dir.y %= Math.PI * 2;
+    if (dir.y < 0) {
+      dir.y += Math.PI * 2;
+    }
+    dir.x = (float) Math.min(Math.max(dir.x, -Math.PI / 2), Math.PI / 2);
+    turnX = 0;
+    turnY = 0;
 
     camera.setPosition(pos);
     camera.setDirection(dir);
@@ -208,6 +226,15 @@ public class Player {
     });
 
     moveDownKey = key;
+  }
+
+  public void registerTurn() {
+    MouseEventDispatcher source = GlfwEventSources.get().getEventSource().getMouseEventDispatcher();
+
+    source.register("move", (MouseEvent event) -> {
+      turnY += event.getPrevY() - event.getPosY();
+      turnX += event.getPrevX() - event.getPosX();
+    });
   }
 
   // ===============================================================================================

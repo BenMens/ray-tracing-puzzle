@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import nl.basmens.util.IoUtil;
 import nl.basmens.util.Mesh;
+import nl.basmens.util.MeshInstance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
@@ -25,10 +26,13 @@ public class Renderer {
 
   private static final int VERTEX_POSITION_ATTRIBUTE_LOCATION = 0;
   private static final int VERTEX_COLOR_ATTRIBUTE_LOCATION = 1;
+
   private static final int VERTICES_POS_BUFFER_BINDING = 0;
   private static final int NORMALS_BUFFER_BINDING = 1;
   private static final int TEXTURE_COORDS_BUFFER_BINDING = 2;
   private static final int INDICES_BUFFER_BINDING = 3;
+  private static final int MESHES_BUFFER_BINDING = 4;
+  
   private static final int CAMERA_FOV_UNIFORM_LOCATION = 2;
   private static final int CAMERA_POINT_MATRIX_UNIFORM_LOCATION = 3;
   private static final int CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION = 4;
@@ -42,6 +46,7 @@ public class Renderer {
   private int normalsBuffer;
   private int textureCoordsBuffer;
   private int indicesBuffer;
+  private int meshesBuffer;
 
 
   // ===============================================================================================
@@ -202,6 +207,7 @@ public class Renderer {
     long normalsBufferSize = 0;
     long textureCoordsBufferSize = 0;
     long indicesBufferSize = 0;
+    long meshesBufferSize = 0;
     for (Renderable r : renderables) {
       Mesh m = r.getMesh();
 
@@ -209,6 +215,7 @@ public class Renderer {
       normalsBufferSize += m.getNormalsCount();
       textureCoordsBufferSize += m.getTextureCoordsCount();
       indicesBufferSize += m.getIndicesCount();
+      meshesBufferSize += m.getMeshInstanceCount();
     }
 
     verticesPosBuffer = glGenBuffers();
@@ -226,6 +233,10 @@ public class Renderer {
     indicesBuffer = glGenBuffers();
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, indicesBufferSize * 4, GL_DYNAMIC_DRAW);
+
+    meshesBuffer = glGenBuffers();
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, meshesBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, meshesBufferSize * 32, GL_DYNAMIC_DRAW);
   }
   
 
@@ -258,7 +269,7 @@ public class Renderer {
       for (Renderable r : renderables) {
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, textureCoordsOffset * 4, 
             r.getMesh().getTextureCoordsData().getData(stack));
-        textureCoordsOffset += r.getMesh().getNormalsCount();
+        textureCoordsOffset += r.getMesh().getTextureCoordsCount();
       }
 
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
@@ -266,8 +277,30 @@ public class Renderer {
       for (Renderable r : renderables) {
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, indicesOffset * 4, 
             r.getMesh().getIndicesData().getData(stack));
-            indicesOffset += r.getMesh().getIndicesCount();
+        indicesOffset += r.getMesh().getIndicesCount();
       }
+
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, meshesBuffer);
+      long meschesOffset = 0;
+      for (Renderable r : renderables) {
+        ByteBuffer m = stack.malloc(32);
+        MeshInstance meshInstance = r.getMesh().getMeshInstance();
+
+        m
+          .putFloat(meshInstance.centerX())
+          .putFloat(meshInstance.centerY())
+          .putFloat(meshInstance.centerZ())
+          .putFloat(0)
+          .putInt(meshInstance.offset())
+          .putInt(meshInstance.count())
+          .putInt(meshInstance.textureIndex())
+          .putFloat(meshInstance.radius())
+          .flip();
+
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, meschesOffset * 32, m);
+        meschesOffset += r.getMesh().getMeshInstanceCount();
+      }
+
 
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
@@ -275,6 +308,7 @@ public class Renderer {
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, NORMALS_BUFFER_BINDING, normalsBuffer);
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, TEXTURE_COORDS_BUFFER_BINDING, textureCoordsBuffer);
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INDICES_BUFFER_BINDING, indicesBuffer);
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, MESHES_BUFFER_BINDING, meshesBuffer);
 
       glUseProgram(this.shaderPrograms.get("ray_tracer"));
 

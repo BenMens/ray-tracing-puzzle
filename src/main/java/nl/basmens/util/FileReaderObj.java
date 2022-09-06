@@ -122,7 +122,11 @@ public final class FileReaderObj {
 
   public static void main(String[] args) {
     try {
-      read("obj-files/test.obj");
+      //read("obj-files/test.obj");
+      read("obj-files/donut_low.obj");
+      //read("obj-files/donut_medium.obj");
+      //read("obj-files/donut_high.obj");
+      //read("obj-files/donut_ultra.obj");
     } catch (IOException e) {
       System.out.println("AHHHHHHH");
     }

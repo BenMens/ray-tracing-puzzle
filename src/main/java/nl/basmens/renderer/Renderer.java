@@ -11,6 +11,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import nl.basmens.util.IoUtil;
+import nl.basmens.util.Mesh;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
@@ -24,7 +25,10 @@ public class Renderer {
 
   private static final int VERTEX_POSITION_ATTRIBUTE_LOCATION = 0;
   private static final int VERTEX_COLOR_ATTRIBUTE_LOCATION = 1;
-  private static final int SHADER_BUFFER_BINDING = 0;
+  private static final int VERTICES_POS_BUFFER_BINDING = 0;
+  private static final int NORMALS_BUFFER_BINDING = 1;
+  private static final int TEXTURE_COORDS_BUFFER_BINDING = 2;
+  private static final int INDICES_BUFFER_BINDING = 3;
   private static final int CAMERA_FOV_UNIFORM_LOCATION = 2;
   private static final int CAMERA_POINT_MATRIX_UNIFORM_LOCATION = 3;
   private static final int CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION = 4;
@@ -34,7 +38,11 @@ public class Renderer {
   private HashMap<String, Integer> shaderPrograms = new HashMap<>();
 
   private int vao;
-  private int shaderBuffer;
+  private int verticesPosBuffer;
+  private int normalsBuffer;
+  private int textureCoordsBuffer;
+  private int indicesBuffer;
+
 
   // ===============================================================================================
   // Constructor
@@ -97,7 +105,7 @@ public class Renderer {
     LOGGER.trace("loaded shader programs \n{}", shaderPrograms.toString());
 
     createVao();
-    createShaderBuffer();
+    createShaderBuffers();
   }
 
   // ===============================================================================================
@@ -188,9 +196,38 @@ public class Renderer {
     glBindVertexArray(0);
   }
 
-  void createShaderBuffer() {
-    shaderBuffer = glGenBuffers();
+  void createShaderBuffers() {
+
+    long verticesBufferSize = 0;
+    long normalsBufferSize = 0;
+    long textureCoordsBufferSize = 0;
+    long indicesBufferSize = 0;
+    for (Renderable r : renderables) {
+      Mesh m = r.getMesh();
+
+      verticesBufferSize += m.getVerticesCount();
+      normalsBufferSize += m.getNormalsCount();
+      textureCoordsBufferSize += m.getTextureCoordsCount();
+      indicesBufferSize += m.getIndicesCount();
+    }
+
+    verticesPosBuffer = glGenBuffers();
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, verticesPosBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, verticesBufferSize * 4, GL_DYNAMIC_DRAW);
+
+    normalsBuffer = glGenBuffers();
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, normalsBufferSize * 4, GL_DYNAMIC_DRAW);
+
+    textureCoordsBuffer = glGenBuffers();
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, textureCoordsBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, textureCoordsBufferSize * 4, GL_DYNAMIC_DRAW);
+
+    indicesBuffer = glGenBuffers();
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, indicesBufferSize * 4, GL_DYNAMIC_DRAW);
   }
+  
 
   // ===============================================================================================
   // Render
@@ -198,15 +235,46 @@ public class Renderer {
   public void render(Camera camera) {
 
     try (MemoryStack stack = stackPush()) {
-      ByteBuffer sb = stack.malloc(1 * 4 * 4);
-      for (Renderable r : renderables) {
-        r.getData(sb);
-      }
-      sb.flip();
 
-      glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer);
-      glBufferData(GL_SHADER_STORAGE_BUFFER, sb, GL_DYNAMIC_DRAW);
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, verticesPosBuffer);
+      long vertexOffset = 0;
+      for (Renderable r : renderables) {
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, vertexOffset * 4, 
+            r.getMesh().getVerticesData().getData(stack));
+        vertexOffset += r.getMesh().getVerticesCount();
+
+      }
+
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
+      long normalsOffset = 0;
+      for (Renderable r : renderables) {
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, normalsOffset * 4, 
+            r.getMesh().getNormalsData().getData(stack));
+        normalsOffset += r.getMesh().getNormalsCount();
+      }
+
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, textureCoordsBuffer);
+      long textureCoordsOffset = 0;
+      for (Renderable r : renderables) {
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, textureCoordsOffset * 4, 
+            r.getMesh().getTextureCoordsData().getData(stack));
+        textureCoordsOffset += r.getMesh().getNormalsCount();
+      }
+
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
+      long indicesOffset = 0;
+      for (Renderable r : renderables) {
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, indicesOffset * 4, 
+            r.getMesh().getIndicesData().getData(stack));
+            indicesOffset += r.getMesh().getIndicesCount();
+      }
+
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, VERTICES_POS_BUFFER_BINDING, verticesPosBuffer);
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, NORMALS_BUFFER_BINDING, normalsBuffer);
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, TEXTURE_COORDS_BUFFER_BINDING, textureCoordsBuffer);
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INDICES_BUFFER_BINDING, indicesBuffer);
 
       glUseProgram(this.shaderPrograms.get("ray_tracer"));
 
@@ -221,14 +289,15 @@ public class Renderer {
       glUniformMatrix3fv(CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION, false, matBuffer);
 
       glBindVertexArray(vao);
-      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, shaderBuffer);
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
-      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHADER_BUFFER_BINDING, 0);
-      glBindVertexArray(0);
       glUseProgram(0);
+      glBindVertexArray(0);
+      
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, VERTICES_POS_BUFFER_BINDING, 0);
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, NORMALS_BUFFER_BINDING, 0);
     }
   }
 

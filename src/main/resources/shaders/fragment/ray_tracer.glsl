@@ -23,6 +23,7 @@ layout(location = 2) uniform float u_cameraFOV;
 layout(location = 3) uniform mat4 u_pointCameraMatrix;
 layout(location = 4) uniform mat3 u_vectorCameraMatrix;
 
+
 // ==================================================================================================================================================
 // Structs
 // ==================================================================================================================================================
@@ -61,35 +62,28 @@ struct Light {
 };
 
 // ==================================================================================================================================================
+// SSBOs
+// ==================================================================================================================================================
+
+layout(std430, binding = 0) buffer verticesPosBufferLayout {
+  vec4 verticesPos[];
+};
+
+layout(std430, binding = 1) buffer normalsBufferLayout {
+  vec4 verticesN[];
+};
+
+layout(std430, binding = 2) buffer verticesSTBufferLayout {
+  vec2 verticesST[];
+};
+
+layout(std430, binding = 3) buffer indicesBufferLayout {
+  int indices[];
+};
+
+// ==================================================================================================================================================
 // Scene
 // ==================================================================================================================================================
-vec3[5] verticesPos = vec3[5](
-  vec3( 0,  0,  0),  // 0
-  vec3( 3,  0,  0),  // 1
-  vec3( 0,  0,  3),  // 2
-  vec3( 0,  3, -1),  // 3
-  vec3( 3, -1,  3)   // 4
-);
-
-vec2[4] verticesST = vec2[4](
-  vec2(0, 0),  // 0
-  vec2(1, 0),  // 1
-  vec2(0, 1),  // 2
-  vec2(1, 1)   // 3
-);
-
-vec3[3] verticesN = vec3[3](
-  vec3( 0,  1,  0),  // 0
-  vec3( 3,  9,  3),  // 1
-  vec3( 0,  3,  9)   // 2
-);
-
-int[27] indices = int[27](
-  // v0, v1, v2, t0, t1, t2, n0, n1, n2
-  0, 2, 1, 0, 2, 1, 0, 0, 0,  // 0
-  1, 2, 4, 1, 2, 3, 1, 1, 1,  // 1
-  0, 1, 3, 0, 1, 2, 2, 2, 2   // 2
-);
 
 Mesh[1] meshes = Mesh[1](
   Mesh(0, 3, 0, vec3(0), 19)
@@ -170,7 +164,6 @@ bool intersectTriangle(in vec3 origin, in vec3 direction, in vec3 v0, in vec3 v1
   vec3 tvec = origin - v2; 
   u = dot(tvec, pvec) * invDet; 
   if (u < 0 || u > 1) return false; 
-
   vec3 qvec = cross(tvec, v2v0);
   v = dot(direction, qvec) * invDet; 
   if (v < 0 || u + v > 1) return false; 
@@ -205,9 +198,9 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
         // Check for intersection with the triangle
         int index = (j + m.offset) * 9;
         if (intersectTriangle(origin, direction, 
-          verticesPos[indices[index + 0]], 
-          verticesPos[indices[index + 1]], 
-          verticesPos[indices[index + 2]], t, u, v) && t < tNear) {
+          verticesPos[indices[index + 0]].xyz, 
+          verticesPos[indices[index + 1]].xyz, 
+          verticesPos[indices[index + 2]].xyz, t, u, v) && t < tNear) {
           
           // Intersection found
           indexNear = index;
@@ -227,9 +220,9 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
     verticesST[indices[indexNear + 5]] * (1-uNear-vNear);
 
   vec3 normal = 
-    verticesN[indices[indexNear + 6]] * uNear +
-    verticesN[indices[indexNear + 7]] * vNear +
-    verticesN[indices[indexNear + 8]] * (1-uNear-vNear);
+    verticesN[indices[indexNear + 6]].xyz * uNear +
+    verticesN[indices[indexNear + 7]].xyz * vNear +
+    verticesN[indices[indexNear + 8]].xyz * (1-uNear-vNear);
 
   hit = createRayHit();
   hit.position = origin + tNear * direction;
@@ -245,8 +238,8 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
 // Main
 // ==================================================================================================================================================
 void main() {
-  for (int i = 0; i < verticesN.length; i++) {
-    verticesN[i] = normalize(verticesN[i]);
+  for (int i = 0; i < verticesN.length(); i++) {
+    verticesN[i].xyz = normalize(verticesN[i].xyz);
   }
 
   // ===================================================================================================================
@@ -304,4 +297,5 @@ void main() {
   }
 
   fragColor = vec4(color, 1);
+  //fragColor = vec4(verticesPos[0].xyz, 1);
 }

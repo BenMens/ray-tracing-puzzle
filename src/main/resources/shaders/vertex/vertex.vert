@@ -10,12 +10,6 @@ layout(location=2) uniform float u_cameraFOV;
 layout(location=3) uniform mat4 u_pointCameraMatrix;
 layout(location=4) uniform mat3 u_vectorCameraMatrix;
 
-
-layout(binding=0) buffer shaderBuf
-{
-    vec4 blendColor;
-};
-
 out highp vec4 color;
 
 void main() {

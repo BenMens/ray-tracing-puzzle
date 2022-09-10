@@ -1,7 +1,15 @@
 package nl.basmens.renderer;
 
-import java.nio.ByteBuffer;
+import nl.basmens.util.Mesh;
+import nl.basmens.util.MeshInstance;
 
+/**
+ * Represends an object than can be rendered.
+ */
 public interface Renderable {
-  void getData(ByteBuffer data);
+  Mesh[] getMeshes();
+
+  MeshInstance[] getMeshInstances();
+
+  long getMaxMeshInstanceCount();
 }

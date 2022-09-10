@@ -5,7 +5,6 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
-
 import java.nio.IntBuffer;
 import java.util.Map;
 import nl.basmens.events.listeners.EventDispatcher;
@@ -17,6 +16,7 @@ import nl.basmens.events.types.Event;
 import nl.basmens.game.Player;
 import nl.basmens.game.levels.AbstractLevel;
 import nl.basmens.game.levels.TestLevel;
+import nl.basmens.util.ObjFileReader;
 import nl.basmens.util.Time;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +28,9 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.APIUtil;
 import org.lwjgl.system.MemoryStack;
 
+/**
+ * A puzzle game with puzzels that are based on shaders that use ray-tracing.
+ */
 public class PuzzleGame implements GlfwEventSource {
   private static final Logger LOGGER = LogManager.getLogger(PuzzleGame.class);
 
@@ -121,7 +124,7 @@ public class PuzzleGame implements GlfwEventSource {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-    window = glfwCreateWindow(800, 800, "Ray tracing puzzle", NULL, NULL);
+    window = glfwCreateWindow(1600, 900, "Ray tracing puzzle", NULL, NULL);
     if (window == NULL) {
       throw new RuntimeException("Failed to create the GLFW window");
     }
@@ -148,6 +151,7 @@ public class PuzzleGame implements GlfwEventSource {
     glfwSetCursorPosCallback(window, mouseEventDispatcher::mousePosCallBack);
     glfwSetMouseButtonCallback(window, mouseEventDispatcher::mouseButtonCallback);
     glfwSetScrollCallback(window, mouseEventDispatcher::mouseScrollCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwMakeContextCurrent(window);
 
     // Enable v-sync
@@ -174,7 +178,7 @@ public class PuzzleGame implements GlfwEventSource {
   // Loop
   // ===============================================================================================
   private void loop() {
-    double beginTime = Time.getTime();
+    double beginTime = Time.getTimeStarted();
     double endTime;
     double deltaTime = -1;
 
@@ -186,6 +190,7 @@ public class PuzzleGame implements GlfwEventSource {
 
       if (deltaTime >= 0) {
         level.update(deltaTime);
+        player.update(deltaTime);
       }
 
       IntBuffer w = BufferUtils.createIntBuffer(4);
@@ -199,7 +204,7 @@ public class PuzzleGame implements GlfwEventSource {
       level.render(player.getCamera());
       glfwSwapBuffers(window);
 
-      endTime = Time.getTime();
+      endTime = Time.getTimeSinceProgramStart();
       deltaTime = endTime - beginTime;
       beginTime = endTime;
     }
@@ -224,6 +229,16 @@ public class PuzzleGame implements GlfwEventSource {
   // Main
   // ===============================================================================================
   public static void main(String[] args) {
+    try {
+      ObjFileReader.read("obj-files/test.obj");
+      //ObjFileReader.read("obj-files/donut_low.obj");
+      //ObjFileReader.read("obj-files/donut_medium.obj");
+      //ObjFileReader.read("obj-files/donut_high.obj");
+      //ObjFileReader.read("obj-files/donut_ultra.obj");
+    } catch (Exception e) {
+      System.out.println("AHHHHHHH");
+    }
+
     new PuzzleGame().run();
   }
 }

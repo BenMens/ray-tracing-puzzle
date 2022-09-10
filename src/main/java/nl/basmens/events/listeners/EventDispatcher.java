@@ -7,7 +7,12 @@ import nl.basmens.events.types.Event;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// Guide: https://refactoring.guru/design-patterns/observer/java/example
+/**
+ * Generic event dispatcher.
+ * <p>
+ * Gui1de: https://refactoring.guru/design-patterns/observer/java/example
+ * </p>
+ */
 public class EventDispatcher<E extends Event> {
   private static final Logger LOGGER = LogManager.getLogger(EventDispatcher.class);
 
@@ -17,8 +22,8 @@ public class EventDispatcher<E extends Event> {
   // Constructor
   // ===============================================================================================
   public EventDispatcher(String... eventTypes) {
-    for (String event : eventTypes) {
-      listeners.put(event, new ArrayList<>());
+    for (String e : eventTypes) {
+      listeners.put(e, new ArrayList<>());
     }
   }
 

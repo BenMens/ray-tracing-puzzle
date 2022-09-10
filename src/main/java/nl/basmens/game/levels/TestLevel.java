@@ -23,11 +23,12 @@ public class TestLevel extends AbstractLevel implements Renderable {
     getRenderer().register(this);
 
     try (ObjFileReader reader = new ObjFileReader()) {
-      mesh = reader.read("obj-files/cube.obj").getMesh();
+      //mesh = reader.read("obj-files/cube.obj").getMesh();
       //mesh = reader.read("obj-files/donut_low.obj").getMesh();
-      //mesh = reader.read("obj-files/monkey.obj").getMesh();
+      mesh = reader.read("obj-files/monkey.obj").getMesh();
     } catch (Exception e) {
       // TODO: handle exception
+      System.out.println("AHHHHHHHHHHHHH, in TestLevel");
     }
   }
 

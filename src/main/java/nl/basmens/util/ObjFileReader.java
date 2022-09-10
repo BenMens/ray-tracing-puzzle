@@ -9,10 +9,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector3i;
 
 public final class ObjFileReader implements AutoCloseable {
-  private static final Pattern PATTERN = Pattern.compile("(^[a-z]+\\b|-?[0-9.]+)");
+  private static final Pattern PATTERN = Pattern.compile("((^\\p{IsAlphabetic}+\\b)|-?[0-9.]+)");
 
   private ArrayList<Vector3f> vertices = new ArrayList<>();
   private ArrayList<Vector2f> verticesT = new ArrayList<>();

@@ -37,27 +37,22 @@ public class Mesh implements MeshInterface {
   // ===============================================================================================
   // Vertices
   // ===============================================================================================
-  public final void createVerticesArray(Collection<Vector3f> initVertices) {
-    vertices = new FloatArray(initVertices.size() * 4);
+  public final void setVerticesData(Collection<Vector3f> initVertices) {
+    final long oldSize = (vertices == null) ? -1 : vertices.getMaxBufSize();
+    final long newSize = initVertices.size() * 4L;
+
+    if (vertices == null || oldSize <= newSize) {
+      vertices = new FloatArray(initVertices.size() * 4);
+    }
     for (Vector3f v : initVertices) {
       vertices.getBuffer().put(v.x).put(v.y).put(v.z).put(1);
     }
     vertices.getBuffer().flip();
-  }
 
-  public final void setVerticesData(Collection<Vector3f> initVertices) {
-    if (vertices == null) {
-      createVerticesArray(initVertices);
+    if (oldSize > newSize) {
+      dispatcher.notify(new Event("vertices modified"));
     } else {
-      final long oldSize = vertices.getMaxBufSize();
-
-      createVerticesArray(initVertices);
-
-      if (oldSize == vertices.getMaxBufSize()) {
-        dispatcher.notify(new Event("vertices modified"));
-      } else {
-        dispatcher.notify(new Event("vertices changed"));
-      }
+      dispatcher.notify(new Event("vertices changed"));
     }
   }
 
@@ -74,27 +69,22 @@ public class Mesh implements MeshInterface {
   // ===============================================================================================
   // Textures
   // ===============================================================================================
-  public final void createTextureCoordsArray(Collection<Vector2f> initTextureCoords) {
-    textureCoords = new FloatArray(initTextureCoords.size() * 2);
+  public final void setTextureCoordsData(Collection<Vector2f> initTextureCoords) {
+    final long oldSize = (textureCoords == null) ? -1 : textureCoords.getMaxBufSize();
+    final long newSize = initTextureCoords.size() * 2L;
+
+    if (textureCoords == null || oldSize <= newSize) {
+      textureCoords = new FloatArray(initTextureCoords.size() * 2);
+    }
     for (Vector2f st : initTextureCoords) {
       textureCoords.getBuffer().put(st.x).put(st.y);
     }
     textureCoords.getBuffer().flip();
-  }
 
-  public final void setTextureCoordsData(Collection<Vector2f> initTextureCoords) {
-    if (textureCoords == null) {
-      createTextureCoordsArray(initTextureCoords);
+    if (oldSize > newSize) {
+      dispatcher.notify(new Event("texture coords modified"));
     } else {
-      final long oldSize = textureCoords.getMaxBufSize();
-
-      createTextureCoordsArray(initTextureCoords);
-
-      if (oldSize == textureCoords.getMaxBufSize()) {
-        dispatcher.notify(new Event("texture coords modified"));
-      } else {
-        dispatcher.notify(new Event("texture coords changed"));
-      }
+      dispatcher.notify(new Event("texture coords changed"));
     }
   }
 
@@ -111,27 +101,22 @@ public class Mesh implements MeshInterface {
   // ===============================================================================================
   // Normals
   // ===============================================================================================
-  private final void createNormalsArray(Collection<Vector3f> initNormals) {
-    normals = new FloatArray(initNormals.size() * 4);
+  public final void setNormalsData(Collection<Vector3f> initNormals) {
+    final long oldSize = (normals == null) ? -1 : normals.getMaxBufSize();
+    final long newSize = initNormals.size() * 2L;
+
+    if (normals == null || oldSize <= newSize) {
+      normals = new FloatArray(initNormals.size() * 4);
+    }
     for (Vector3f n : initNormals) {
       normals.getBuffer().put(n.x).put(n.y).put(n.z).put(1);
     }
     normals.getBuffer().flip();
-  }
 
-  public final void setNormalsData(Collection<Vector3f> initNormals) {
-    if (normals == null) {
-      createNormalsArray(initNormals);
+    if (oldSize > newSize) {
+      dispatcher.notify(new Event("normals modified"));
     } else {
-      final long oldSize = normals.getMaxBufSize();
-
-      createNormalsArray(initNormals);
-
-      if (oldSize == normals.getMaxBufSize()) {
-        dispatcher.notify(new Event("normals modified"));
-      } else {
-        dispatcher.notify(new Event("normals changed"));
-      }
+      dispatcher.notify(new Event("normals changed"));
     }
   }
 
@@ -148,27 +133,22 @@ public class Mesh implements MeshInterface {
   // ===============================================================================================
   // Indices
   // ===============================================================================================
-  private final void createIndicesArray(Collection<Integer> initIndices) {
-    indices = new IntArray(initIndices.size());
+  public final void setIndicesData(Collection<Integer> initIndices) {
+    final long oldSize = (indices == null) ? -1 : indices.getMaxBufSize();
+    final long newSize = initIndices.size() * 2L;
+
+    if (indices == null || oldSize <= newSize) {
+      indices = new IntArray(initIndices.size());
+    }
     for (Integer face : initIndices) {
       indices.getBuffer().put(face);
     }
     indices.getBuffer().flip();
-  }
 
-  public final void setIndicesData(Collection<Integer> initIndices) {
-    if (indices == null) {
-      createIndicesArray(initIndices);
+    if (oldSize > newSize) {
+      dispatcher.notify(new Event("indices modified"));
     } else {
-      final long oldSize = indices.getMaxBufSize();
-
-      createIndicesArray(initIndices);
-
-      if (oldSize == indices.getMaxBufSize()) {
-        dispatcher.notify(new Event("indices modified"));
-      } else {
-        dispatcher.notify(new Event("indices changed"));
-      }
+      dispatcher.notify(new Event("indices changed"));
     }
   }
 

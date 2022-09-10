@@ -17,7 +17,6 @@ import nl.basmens.events.types.Event;
 import nl.basmens.game.Player;
 import nl.basmens.game.levels.AbstractLevel;
 import nl.basmens.game.levels.TestLevel;
-import nl.basmens.util.ObjFileReader;
 import nl.basmens.util.Time;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

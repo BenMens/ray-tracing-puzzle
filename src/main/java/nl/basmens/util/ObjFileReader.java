@@ -17,7 +17,7 @@ public final class ObjFileReader implements AutoCloseable {
   private ArrayList<Vector3f> vertices = new ArrayList<>();
   private ArrayList<Vector2f> verticesT = new ArrayList<>();
   private ArrayList<Vector3f> verticesN = new ArrayList<>();
-  private ArrayList<Vector3i> faces = new ArrayList<>();
+  private ArrayList<Integer> faces = new ArrayList<>();
 
 
   public ObjFileReader read(String path) throws IOException {
@@ -36,18 +36,18 @@ public final class ObjFileReader implements AutoCloseable {
 
         switch (type) {
           case "v":
-            vertices.add(readVector3f(m));
+            vertices.add(new Vector3f(readFloat(m), readFloat(m), readFloat(m)));
             break;
           case "vt":
-            verticesT.add(readVector2f(m));
+            verticesT.add(new Vector2f(readFloat(m), readFloat(m)));
             break;
           case "vn":
-            verticesN.add(readVector3f(m));
+            verticesN.add(new Vector3f(readFloat(m), readFloat(m), readFloat(m)));
             break;
           case "f":
-            faces.add(readVector3i(m));
-            faces.add(readVector3i(m));
-            faces.add(readVector3i(m));
+            for (int i = 0; i < 9; i++) {
+              faces.add(readInt(m) - 1);
+            }
             break;
           default:
             break;
@@ -55,48 +55,18 @@ public final class ObjFileReader implements AutoCloseable {
       }
     }
 
-    int[] f = new int[faces.size() * 3];
-    for (int i = 0; i < f.length; i += 3) {
-      f[i + 0] = faces.get(i / 3).x;
-      f[i + 1] = faces.get(i / 3).y;
-      f[i + 2] = faces.get(i / 3).z;
-    }
-
     return this;
   }
 
 
-  private static Vector2f readVector2f(Matcher m) {
-    float[] numbers = new float[2];
-
-    for (int i = 0; i < numbers.length; i++) {
-      m.find();
-      numbers[i] = Float.parseFloat(m.group());
-    }
-
-    return new Vector2f(numbers);
+  private static float readFloat(Matcher m) {
+    m.find();
+    return Float.parseFloat(m.group());
   }
 
-  private static Vector3f readVector3f(Matcher m) {
-    float[] numbers = new float[3];
-
-    for (int i = 0; i < numbers.length; i++) {
-      m.find();
-      numbers[i] = Float.parseFloat(m.group());
-    }
-
-    return new Vector3f(numbers);
-  }
-
-  private static Vector3i readVector3i(Matcher m) {
-    int[] numbers = new int[3];
-
-    for (int i = 0; i < numbers.length; i++) {
-      m.find();
-      numbers[i] = Integer.parseInt(m.group()) - 1;
-    }
-
-    return new Vector3i(numbers);
+  private static int readInt(Matcher m) {
+    m.find();
+    return Integer.parseInt(m.group());
   }
 
 

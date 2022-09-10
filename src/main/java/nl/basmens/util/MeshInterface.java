@@ -10,13 +10,13 @@ public interface MeshInterface {
 
   long getVerticesCount();
 
-  ShaderDataSource<FloatBuffer> getNormalsData();
-
-  long getNormalsCount();
-
   ShaderDataSource<FloatBuffer> getTextureCoordsData();
 
   long getTextureCoordsCount();
+
+  ShaderDataSource<FloatBuffer> getNormalsData();
+
+  long getNormalsCount();
 
   ShaderDataSource<IntBuffer> getIndicesData();
   

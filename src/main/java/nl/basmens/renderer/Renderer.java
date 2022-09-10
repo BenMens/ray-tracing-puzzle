@@ -11,8 +11,8 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import nl.basmens.util.IoUtil;
-import nl.basmens.util.Mesh;
 import nl.basmens.util.MeshInstance;
+import nl.basmens.util.MeshInterface;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
@@ -28,8 +28,8 @@ public class Renderer {
   private static final int VERTEX_COLOR_ATTRIBUTE_LOCATION = 1;
 
   private static final int VERTICES_POS_BUFFER_BINDING = 0;
-  private static final int NORMALS_BUFFER_BINDING = 1;
-  private static final int TEXTURE_COORDS_BUFFER_BINDING = 2;
+  private static final int TEXTURE_COORDS_BUFFER_BINDING = 1;
+  private static final int NORMALS_BUFFER_BINDING = 2;
   private static final int INDICES_BUFFER_BINDING = 3;
   private static final int MESHES_BUFFER_BINDING = 4;
   
@@ -211,7 +211,7 @@ public class Renderer {
     for (Renderable r : renderables) {
       meshesBufferSize += r.getMaxMeshInstanceCount();
 
-      for (Mesh m : r.getMeshes()) {
+      for (MeshInterface m : r.getMeshes()) {
         verticesBufferSize += m.getVerticesCount();
         normalsBufferSize += m.getNormalsCount();
         textureCoordsBufferSize += m.getTextureCoordsCount();
@@ -223,13 +223,13 @@ public class Renderer {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, verticesPosBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, verticesBufferSize * 4, GL_DYNAMIC_DRAW);
 
-    normalsBuffer = glGenBuffers();
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, normalsBufferSize * 4, GL_DYNAMIC_DRAW);
-
     textureCoordsBuffer = glGenBuffers();
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, textureCoordsBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, textureCoordsBufferSize * 4, GL_DYNAMIC_DRAW);
+
+    normalsBuffer = glGenBuffers();
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, normalsBufferSize * 4, GL_DYNAMIC_DRAW);
 
     indicesBuffer = glGenBuffers();
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
@@ -251,37 +251,37 @@ public class Renderer {
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, verticesPosBuffer);
       long vertexOffset = 0;
       for (Renderable r : renderables) {
-        for (Mesh m : r.getMeshes()) {
+        for (MeshInterface m : r.getMeshes()) {
           glBufferSubData(GL_SHADER_STORAGE_BUFFER, vertexOffset * 4, 
               m.getVerticesData().getData(stack));
           vertexOffset += m.getVerticesCount();
         }
       }
 
-      glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
-      long normalsOffset = 0;
-      for (Renderable r : renderables) {
-        for (Mesh m : r.getMeshes()) {
-          glBufferSubData(GL_SHADER_STORAGE_BUFFER, normalsOffset * 4, 
-              m.getNormalsData().getData(stack));
-          normalsOffset += m.getNormalsCount();
-        }
-      }
-
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, textureCoordsBuffer);
       long textureCoordsOffset = 0;
       for (Renderable r : renderables) {
-        for (Mesh m : r.getMeshes()) {
+        for (MeshInterface m : r.getMeshes()) {
           glBufferSubData(GL_SHADER_STORAGE_BUFFER, textureCoordsOffset * 4, 
               m.getTextureCoordsData().getData(stack));
           textureCoordsOffset += m.getTextureCoordsCount();
         }
       }
 
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
+      long normalsOffset = 0;
+      for (Renderable r : renderables) {
+        for (MeshInterface m : r.getMeshes()) {
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, normalsOffset * 4, 
+              m.getNormalsData().getData(stack));
+          normalsOffset += m.getNormalsCount();
+        }
+      }
+
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
       long indicesOffset = 0;
       for (Renderable r : renderables) {
-        for (Mesh m : r.getMeshes()) {
+        for (MeshInterface m : r.getMeshes()) {
           glBufferSubData(GL_SHADER_STORAGE_BUFFER, indicesOffset * 4, 
               m.getIndicesData().getData(stack));
           indicesOffset += m.getIndicesCount();
@@ -293,7 +293,7 @@ public class Renderer {
       for (Renderable r : renderables) {
         for (MeshInstance mi : r.getMeshInstances()) {
           ByteBuffer meshBufferData = stack.malloc(32);
-          Mesh m = mi.mesh();
+          MeshInterface m = mi.mesh();
   
           meshBufferData
               .putFloat(m.getCenter().x)
@@ -303,7 +303,7 @@ public class Renderer {
               .putInt(0)  // Offset
               .putInt((int) Math.floorDiv(m.getIndicesCount(), 9))  // Count
               .putInt(0)  // Texture index
-              .putFloat(m.getRadius())
+              .putFloat(m.getRadius2())
               .flip();
   
           glBufferSubData(GL_SHADER_STORAGE_BUFFER, meschesOffset * 32, meshBufferData);

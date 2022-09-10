@@ -11,21 +11,16 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
-public final class ObjFileReader {
-  private static final Pattern PATTERN = Pattern.compile("(v\\b|vt\\b|vn\\b|f\\b|-?[0-9.]+)");
+public final class ObjFileReader implements AutoCloseable {
+  private static final Pattern PATTERN = Pattern.compile("(^[a-z]+\\b|-?[0-9.]+)");
+
+  private ArrayList<Vector3f> vertices = new ArrayList<>();
+  private ArrayList<Vector2f> verticesT = new ArrayList<>();
+  private ArrayList<Vector3f> verticesN = new ArrayList<>();
+  private ArrayList<Vector3i> faces = new ArrayList<>();
 
 
-  private ObjFileReader() {
-    // Prevent initialization
-  }
-
-
-  public static void read(String path) throws IOException {
-    ArrayList<Vector3f> vertices = new ArrayList<>();
-    ArrayList<Vector2f> verticesT = new ArrayList<>();
-    ArrayList<Vector3f> verticesN = new ArrayList<>();
-    ArrayList<Vector3i> faces = new ArrayList<>();
-
+  public ObjFileReader read(String path) throws IOException {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try (InputStream in = classLoader.getResourceAsStream(path);
         BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
@@ -67,22 +62,7 @@ public final class ObjFileReader {
       f[i + 2] = faces.get(i / 3).z;
     }
 
-    for (Vector3f x : vertices) {
-      System.out.println(x.x + ", " + x.y + ", " + x.z);
-    }
-    System.out.println();
-    for (Vector2f x : verticesT) {
-      System.out.println(x.x + ", " + x.y);
-    }
-    System.out.println();
-    for (Vector3f x : verticesN) {
-      System.out.println(x.x + ", " + x.y + ", " + x.z);
-    }
-    System.out.println();
-    for (int i = 0; i < f.length; i += 9) {
-      System.out.println(f[i] + "/" + f[i + 1] + "/" + f[i + 2] + ", " + f[i + 3] + "/" + f[i + 4]
-          + "/" + f[i + 5] + ", " + f[i + 6] + "/" + f[i + 7] + "/" + f[i + 8]);
-    }
+    return this;
   }
 
 
@@ -113,9 +93,20 @@ public final class ObjFileReader {
 
     for (int i = 0; i < numbers.length; i++) {
       m.find();
-      numbers[i] = Integer.parseInt(m.group());
+      numbers[i] = Integer.parseInt(m.group()) - 1;
     }
 
     return new Vector3i(numbers);
+  }
+
+
+  public Mesh getMesh() {
+    return new Mesh(vertices, verticesT, verticesN, faces);
+  }
+
+
+  @Override
+  public void close() throws Exception {
+    // Auto closable
   }
 }

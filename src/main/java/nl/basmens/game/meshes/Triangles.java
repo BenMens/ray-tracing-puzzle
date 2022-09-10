@@ -4,12 +4,12 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import nl.basmens.util.FloatArray;
 import nl.basmens.util.IntArray;
-import nl.basmens.util.Mesh;
+import nl.basmens.util.MeshInterface;
 import nl.basmens.util.ShaderDataSource;
 import org.joml.Vector3f;
 
 
-public class Triangles implements Mesh {
+public class Triangles implements MeshInterface {
 
   private double time;
   private Vector3f color = new Vector3f(0);
@@ -45,9 +45,9 @@ public class Triangles implements Mesh {
 
     indices = new IntArray(27);
     indices.getBuffer()
-        .put(0).put(2).put(1).put(0).put(2).put(1).put(0).put(0).put(0)
-        .put(1).put(2).put(4).put(1).put(2).put(3).put(1).put(1).put(1)
-        .put(0).put(1).put(3).put(0).put(1).put(2).put(2).put(2).put(2)
+        .put(0).put(0).put(0).put(2).put(2).put(0).put(1).put(1).put(0)
+        .put(1).put(1).put(1).put(2).put(2).put(1).put(4).put(3).put(1)
+        .put(0).put(0).put(2).put(1).put(1).put(2).put(3).put(2).put(2)
         .flip();
   }
 
@@ -111,7 +111,7 @@ public class Triangles implements Mesh {
   }
 
   @Override
-  public float getRadius() {
+  public float getRadius2() {
     return 19;
   }
 }

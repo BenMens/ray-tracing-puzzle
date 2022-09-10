@@ -1,3 +1,3 @@
 package nl.basmens.util;
 
-public record MeshInstance(Mesh mesh) {}
+public record MeshInstance(MeshInterface mesh) {}

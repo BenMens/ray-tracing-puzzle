@@ -4,7 +4,7 @@
     "java.checkstyle.configuration": "${workspaceFolder}\\checkstyle.xml",
     "java.checkstyle.properties": {
     },
-    "java.checkstyle.version": "10.3.2",
+    "java.checkstyle.version": "10.3.3",
     "java.inlayHints.parameterNames.enabled": "none",
     "maven.view": "hierarchical",
     "editor.tabSize": 2

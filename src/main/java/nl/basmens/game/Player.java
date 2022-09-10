@@ -16,16 +16,12 @@ import nl.basmens.events.sources.GlfwEventSources;
 import nl.basmens.events.types.KeyEvent;
 import nl.basmens.events.types.MouseEvent;
 import nl.basmens.renderer.Camera;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
 
 /**
  * TODO: describe the goal of this class.
  */
 public class Player {
-  private static final Logger LOGGER = LogManager.getLogger(Player.class);
-
   private static int moveForwardKey = GLFW_KEY_W;
   private static int moveBackwardKey = GLFW_KEY_S;
   private static int moveLeftKey = GLFW_KEY_A;

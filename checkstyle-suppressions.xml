@@ -4,5 +4,7 @@
   "https://checkstyle.org/dtds/suppressions_1_2.dtd">
 
 <suppressions>
-  <suppress checks="MissingJavadocTypeCheck|AvoidStarImportCheck" files="*.java"/>
+  <suppress checks="MissingJavadocTypeCheck" files=".*"/>
+  <suppress checks="MissingJavadocMethodCheck" files=".*"/>
+  <suppress checks="AvoidStarImportCheck" files=".*"/>
 </suppressions>

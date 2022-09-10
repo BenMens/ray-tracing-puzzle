@@ -1,15 +1,14 @@
 package nl.basmens.game.levels;
 
 import nl.basmens.game.meshes.Triangles;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import nl.basmens.renderer.Renderable;
+import nl.basmens.util.Mesh;
+import nl.basmens.util.MeshInstance;
 
 /**
  * Represends a level in the game.
  */
-public class TestLevel extends AbstractLevel {
-  private static final Logger LOGGER = LogManager.getLogger(TestLevel.class);
-
+public class TestLevel extends AbstractLevel implements Renderable {
   private Triangles triangles;
 
 
@@ -18,7 +17,7 @@ public class TestLevel extends AbstractLevel {
   // ===============================================================================================
   public TestLevel() {
     triangles = new Triangles();
-    getRenderer().register(triangles);
+    getRenderer().register(this);
   }
 
   
@@ -31,4 +30,21 @@ public class TestLevel extends AbstractLevel {
   public void update(double deltaTime) {
     triangles.update(deltaTime);
   }
+
+  @Override
+  public Mesh[] getMeshes() {
+    return new Mesh[]{triangles};
+  }
+
+  @Override
+  public MeshInstance[] getMeshInstances() {
+    return new MeshInstance[]{new MeshInstance(triangles)};
+  }
+
+
+  @Override
+  public long getMaxMeshInstanceCount() {
+    return 1;
+  }
+
 }

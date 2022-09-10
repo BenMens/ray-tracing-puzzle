@@ -209,13 +209,14 @@ public class Renderer {
     long indicesBufferSize = 0;
     long meshesBufferSize = 0;
     for (Renderable r : renderables) {
-      Mesh m = r.getMesh();
+      meshesBufferSize += r.getMaxMeshInstanceCount();
 
-      verticesBufferSize += m.getVerticesCount();
-      normalsBufferSize += m.getNormalsCount();
-      textureCoordsBufferSize += m.getTextureCoordsCount();
-      indicesBufferSize += m.getIndicesCount();
-      meshesBufferSize += m.getMeshInstanceCount();
+      for (Mesh m : r.getMeshes()) {
+        verticesBufferSize += m.getVerticesCount();
+        normalsBufferSize += m.getNormalsCount();
+        textureCoordsBufferSize += m.getTextureCoordsCount();
+        indicesBufferSize += m.getIndicesCount();
+      }
     }
 
     verticesPosBuffer = glGenBuffers();
@@ -250,57 +251,65 @@ public class Renderer {
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, verticesPosBuffer);
       long vertexOffset = 0;
       for (Renderable r : renderables) {
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, vertexOffset * 4, 
-            r.getMesh().getVerticesData().getData(stack));
-        vertexOffset += r.getMesh().getVerticesCount();
-
+        for (Mesh m : r.getMeshes()) {
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, vertexOffset * 4, 
+              m.getVerticesData().getData(stack));
+          vertexOffset += m.getVerticesCount();
+        }
       }
 
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
       long normalsOffset = 0;
       for (Renderable r : renderables) {
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, normalsOffset * 4, 
-            r.getMesh().getNormalsData().getData(stack));
-        normalsOffset += r.getMesh().getNormalsCount();
+        for (Mesh m : r.getMeshes()) {
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, normalsOffset * 4, 
+              m.getNormalsData().getData(stack));
+          normalsOffset += m.getNormalsCount();
+        }
       }
 
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, textureCoordsBuffer);
       long textureCoordsOffset = 0;
       for (Renderable r : renderables) {
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, textureCoordsOffset * 4, 
-            r.getMesh().getTextureCoordsData().getData(stack));
-        textureCoordsOffset += r.getMesh().getTextureCoordsCount();
+        for (Mesh m : r.getMeshes()) {
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, textureCoordsOffset * 4, 
+              m.getTextureCoordsData().getData(stack));
+          textureCoordsOffset += m.getTextureCoordsCount();
+        }
       }
 
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
       long indicesOffset = 0;
       for (Renderable r : renderables) {
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, indicesOffset * 4, 
-            r.getMesh().getIndicesData().getData(stack));
-        indicesOffset += r.getMesh().getIndicesCount();
+        for (Mesh m : r.getMeshes()) {
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, indicesOffset * 4, 
+              m.getIndicesData().getData(stack));
+          indicesOffset += m.getIndicesCount();
+        }
       }
 
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, meshesBuffer);
       long meschesOffset = 0;
       for (Renderable r : renderables) {
-        ByteBuffer m = stack.malloc(32);
-        MeshInstance meshInstance = r.getMesh().getMeshInstance();
-
-        m
-          .putFloat(meshInstance.centerX())
-          .putFloat(meshInstance.centerY())
-          .putFloat(meshInstance.centerZ())
-          .putFloat(0)
-          .putInt(meshInstance.offset())
-          .putInt(meshInstance.count())
-          .putInt(meshInstance.textureIndex())
-          .putFloat(meshInstance.radius())
-          .flip();
-
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, meschesOffset * 32, m);
-        meschesOffset += r.getMesh().getMeshInstanceCount();
+        for (MeshInstance mi : r.getMeshInstances()) {
+          ByteBuffer meshBufferData = stack.malloc(32);
+          Mesh m = mi.mesh();
+  
+          meshBufferData
+              .putFloat(m.getCenter().x)
+              .putFloat(m.getCenter().y)
+              .putFloat(m.getCenter().z)
+              .putFloat(0)
+              .putInt(0) // Offset
+              .putInt((int) Math.floorDiv(m.getIndicesCount(), 9)) // Count
+              .putInt(0)
+              .putFloat(m.getRadius())
+              .flip();
+  
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, meschesOffset * 32, meshBufferData);
+          meschesOffset += r.getMaxMeshInstanceCount();
+        }
       }
-
 
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
@@ -334,5 +343,4 @@ public class Renderer {
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, NORMALS_BUFFER_BINDING, 0);
     }
   }
-
 }

@@ -2,16 +2,14 @@ package nl.basmens.game.meshes;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import nl.basmens.renderer.Renderable;
 import nl.basmens.util.Mesh;
-import nl.basmens.util.MeshInstance;
 import nl.basmens.util.ShaderDataSource;
 import nl.basmens.util.FloatArray;
 import nl.basmens.util.IntArray;
 import org.joml.Vector3f;
 
 
-public class Triangles implements Renderable, Mesh {
+public class Triangles implements Mesh {
 
     private double time;
     private Vector3f color = new Vector3f(0);
@@ -67,12 +65,6 @@ public class Triangles implements Renderable, Mesh {
       return color;
     }
 
-
-    @Override
-    public Mesh getMesh() {
-      return this;
-    }
-
     @Override
     public ShaderDataSource<FloatBuffer> getVerticesData() {
       return vertices;
@@ -114,12 +106,12 @@ public class Triangles implements Renderable, Mesh {
     }
 
     @Override
-    public MeshInstance getMeshInstance() {
-      return new MeshInstance(0, 3, 0, 0, 0, 0, 19);
+    public Vector3f getCenter() {
+      return new Vector3f(0, 0, 0);
     }
-  
+
     @Override
-    public long getMeshInstanceCount() {
-      return 1;
+    public float getRadius() {
+      return 19;
     }
 }

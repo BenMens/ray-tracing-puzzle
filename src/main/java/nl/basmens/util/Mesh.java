@@ -2,6 +2,7 @@ package nl.basmens.util;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import org.joml.Vector3f;
 
 public interface Mesh {
 
@@ -17,6 +18,7 @@ public interface Mesh {
   ShaderDataSource<IntBuffer> getIndicesData();
   long getIndicesCount();
 
-  MeshInstance getMeshInstance();
-  long getMeshInstanceCount();
+  Vector3f getCenter();
+
+  float getRadius();
 }

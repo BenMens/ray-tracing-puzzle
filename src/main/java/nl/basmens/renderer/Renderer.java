@@ -299,10 +299,10 @@ public class Renderer {
               .putFloat(m.getCenter().x)
               .putFloat(m.getCenter().y)
               .putFloat(m.getCenter().z)
-              .putFloat(0)
-              .putInt(0) // Offset
-              .putInt((int) Math.floorDiv(m.getIndicesCount(), 9)) // Count
-              .putInt(0)
+              .putFloat(1)
+              .putInt(0)  // Offset
+              .putInt((int) Math.floorDiv(m.getIndicesCount(), 9))  // Count
+              .putInt(0)  // Texture index
               .putFloat(m.getRadius())
               .flip();
   

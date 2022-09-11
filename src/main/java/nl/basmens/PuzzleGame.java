@@ -5,6 +5,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
+
 import java.nio.IntBuffer;
 import java.util.Map;
 import nl.basmens.events.listeners.EventDispatcher;
@@ -16,7 +17,6 @@ import nl.basmens.events.types.Event;
 import nl.basmens.game.Player;
 import nl.basmens.game.levels.AbstractLevel;
 import nl.basmens.game.levels.TestLevel;
-import nl.basmens.util.ObjFileReader;
 import nl.basmens.util.Time;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,10 +38,8 @@ public class PuzzleGame implements GlfwEventSource {
 
   public final EventDispatcher<Event> windowEventsDispatcher =
       new EventDispatcher<>("open", "close");
-  public final KeyEventDispatcher keyEventDispatcher =
-      new KeyEventDispatcher();
-  public final MouseEventDispatcher mouseEventDispatcher =
-      new MouseEventDispatcher();
+  public final KeyEventDispatcher keyEventDispatcher = new KeyEventDispatcher();
+  public final MouseEventDispatcher mouseEventDispatcher = new MouseEventDispatcher();
 
   private AbstractLevel level;
   private Player player;
@@ -81,7 +79,7 @@ public class PuzzleGame implements GlfwEventSource {
   // =============================================================================================
   // Init
   // =============================================================================================
-  private void init() throws Exception {  // TODO throw specific exeption
+  private void init() throws Exception { // TODO throw specific exeption
     // ============================================================
     // Set log4j error callback
     // ============================================================
@@ -229,16 +227,6 @@ public class PuzzleGame implements GlfwEventSource {
   // Main
   // ===============================================================================================
   public static void main(String[] args) {
-    try {
-      ObjFileReader.read("obj-files/test.obj");
-      //ObjFileReader.read("obj-files/donut_low.obj");
-      //ObjFileReader.read("obj-files/donut_medium.obj");
-      //ObjFileReader.read("obj-files/donut_high.obj");
-      //ObjFileReader.read("obj-files/donut_ultra.obj");
-    } catch (Exception e) {
-      System.out.println("AHHHHHHH");
-    }
-
     new PuzzleGame().run();
   }
 }

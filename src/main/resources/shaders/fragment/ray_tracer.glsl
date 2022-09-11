@@ -68,12 +68,12 @@ layout(std430, binding = 0) buffer verticesPosBufferLayout {
   vec4 verticesPos[];
 };
 
-layout(std430, binding = 1) buffer normalsBufferLayout {
-  vec4 verticesN[];
+layout(std430, binding = 1) buffer verticesSTBufferLayout {
+  vec2 verticesST[];
 };
 
-layout(std430, binding = 2) buffer verticesSTBufferLayout {
-  vec2 verticesST[];
+layout(std430, binding = 2) buffer normalsBufferLayout {
+  vec4 verticesN[];
 };
 
 layout(std430, binding = 3) buffer indicesBufferLayout {
@@ -198,8 +198,8 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
         int index = (j + m.offset) * 9;
         if (intersectTriangle(origin, direction, 
           verticesPos[indices[index + 0]].xyz, 
-          verticesPos[indices[index + 1]].xyz, 
-          verticesPos[indices[index + 2]].xyz, t, u, v) && t < tNear) {
+          verticesPos[indices[index + 3]].xyz, 
+          verticesPos[indices[index + 6]].xyz, t, u, v) && t < tNear) {
           
           // Intersection found
           indexNear = index;
@@ -214,13 +214,13 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
   }
 
   vec2 texCoord = 
-    verticesST[indices[indexNear + 3]] * uNear +
+    verticesST[indices[indexNear + 1]] * uNear +
     verticesST[indices[indexNear + 4]] * vNear +
-    verticesST[indices[indexNear + 5]] * (1-uNear-vNear);
+    verticesST[indices[indexNear + 7]] * (1-uNear-vNear);
 
   vec3 normal = 
-    verticesN[indices[indexNear + 6]].xyz * uNear +
-    verticesN[indices[indexNear + 7]].xyz * vNear +
+    verticesN[indices[indexNear + 2]].xyz * uNear +
+    verticesN[indices[indexNear + 5]].xyz * vNear +
     verticesN[indices[indexNear + 8]].xyz * (1-uNear-vNear);
 
   hit = createRayHit();
@@ -292,7 +292,10 @@ void main() {
         }
       }
     }
-    //color = albedo * abs(dot(-hit.direction, hit.normal));
+
+    // color = albedo * abs(dot(-hit.direction, hit.normal));
+
+    color += albedo * 0.2;
   }
 
   fragColor = vec4(color, 1);

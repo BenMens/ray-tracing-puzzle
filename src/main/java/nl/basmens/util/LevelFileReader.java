@@ -27,8 +27,8 @@ public final class LevelFileReader implements AutoCloseable {
   private Map<String, Object> levelData;
 
   private ArrayList<HashMap<String, Object>> gameObjects;
-  private HashMap<String, Object> meshes;
-  private HashMap<String, Object> textures;
+  private ArrayList<HashMap<String, Object>> meshes;
+  private ArrayList<HashMap<String, Object>> textures;
 
   // ===============================================================================================
   // Read
@@ -45,8 +45,8 @@ public final class LevelFileReader implements AutoCloseable {
       levelData = (Map<String, Object>) level.get(LEVEL_DATA_KEY);
 
       gameObjects = (ArrayList<HashMap<String, Object>>) level.get(GAME_OBJECTS_KEY);
-      meshes = (HashMap<String, Object>) level.get(MESHES_KEY);
-      textures = (HashMap<String, Object>) level.get(TEXTUES_KEY);
+      meshes = (ArrayList<HashMap<String, Object>>) level.get(MESHES_KEY);
+      textures = (ArrayList<HashMap<String, Object>>) level.get(TEXTUES_KEY);
       
     } catch (JsonException e) {
       LOGGER.warn("Could not read level file '" + path + "', because the json is invalid", e);
@@ -74,13 +74,13 @@ public final class LevelFileReader implements AutoCloseable {
   }
 
   @SuppressWarnings("unchecked")
-  public Map<String, Object> getMeshes() {
-    return (Map<String, Object>) meshes.clone();
+  public List<HashMap<String, Object>> getMeshes() {
+    return (List<HashMap<String, Object>>) meshes.clone();
   }
 
   @SuppressWarnings("unchecked")
-  public Map<String, Object> getTextures() {
-    return (Map<String, Object>) textures.clone();
+  public List<HashMap<String, Object>> getTextures() {
+    return (List<HashMap<String, Object>>) textures.clone();
   }
 
 

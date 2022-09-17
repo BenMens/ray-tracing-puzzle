@@ -15,39 +15,44 @@
       "object data": {}
     },
     {
-      "type": "chest",
-      "position": [1, 2, 3],
-      "mesh": "donut",
-      "texture": "wood",
-      "object data": {
-        "items": ["stick", "apple", "paper"]
-      }
+      "type": "json",
+      "path": "game-objects/chest.json",
+      "texture": "dirt"
     }
   ],
 
-  "meshes": {
-    "cube": {
-      "type": "cube"
+  "meshes": [
+    {
+      "type": "cube",
+      "name": "cube"
     },
-    "donut": {
+    {
       "type" : "obj",
-      "obj file": "obj-files/donut_low.obj"
+      "name": "donut",
+      "path": "obj-files/donut_low.obj"
     },
-    "monkey": {
+    {
       "type" : "obj",
-      "obj file": "obj-files/monkey.obj"
+      "name": "monkey",
+      "path": "obj-files/monkey.obj"
     }
-  },
+  ],
 
-  "textures": {
-    "dirt": {
+  "textures": [
+    {
+      "type": "png",
+      "name": "dirt",
       "texture": "textures/dirt.png"
     },
-    "stone": {
+    {
+      "type": "png",
+      "name": "stone",
       "texture": "textures/stone.png"
     },
-    "wood": {
+    {
+      "type": "png",
+      "name": "wood",
       "texture": "textures/wood.png"
     }
-  }
+  ]
 }

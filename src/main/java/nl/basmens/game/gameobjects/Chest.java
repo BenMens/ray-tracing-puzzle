@@ -16,7 +16,7 @@ public class Chest extends GameObject {
   @Override
   public void printData() {
     System.out.println("    {");
-    System.out.println("        type = game object");
+    System.out.println("        type = chest");
     System.out.println("        position = " + getPosition().x + ", " + getPosition().y + ", " + getPosition().z);
     System.out.println("        mesh = '" + getMesh() + "'");
     System.out.println("        texture = '" + getTexture() + "'");

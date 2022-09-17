@@ -16,6 +16,13 @@ import org.apache.logging.log4j.Logger;
 public final class LevelFileReader implements AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(LevelFileReader.class);
 
+  // Generics
+  private static final String TYPE_KEY = "type";
+  private static final String LEVEL_DATA_KEY = "position";
+  private static final String GAME_OBJECTS_KEY = "game objects";
+  private static final String MESHES_KEY = "meshes";
+  private static final String TEXTUES_KEY = "textures";
+
   private String type;
   private Map<String, Object> levelData;
 
@@ -34,12 +41,12 @@ public final class LevelFileReader implements AutoCloseable {
 
       HashMap<String, Object> level = (HashMap<String, Object>) Jsoner.deserialize(br);
 
-      type = (String) level.get("type");
-      levelData = (Map<String, Object>) level.get("level data");
+      type = (String) level.get(TYPE_KEY);
+      levelData = (Map<String, Object>) level.get(LEVEL_DATA_KEY);
 
-      gameObjects = (ArrayList<HashMap<String, Object>>) level.get("game objects");
-      meshes = (HashMap<String, Object>) level.get("meshes");
-      textures = (HashMap<String, Object>) level.get("textures");
+      gameObjects = (ArrayList<HashMap<String, Object>>) level.get(GAME_OBJECTS_KEY);
+      meshes = (HashMap<String, Object>) level.get(MESHES_KEY);
+      textures = (HashMap<String, Object>) level.get(TEXTUES_KEY);
       
     } catch (JsonException e) {
       LOGGER.warn("Could not read level file '" + path + "', because the json is invalid", e);

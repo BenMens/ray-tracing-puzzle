@@ -256,6 +256,6 @@ public class PuzzleGame implements GlfwEventSource {
     AbstractLevel level = loadLevel("levels/example.json");
     level.printData();
 
-    new PuzzleGame().run();
+    //new PuzzleGame().run();
   }
 }

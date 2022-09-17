@@ -1,0 +1,53 @@
+{
+  "type": "type1",
+  "level data": {
+    "max time": 100,
+    "secret code": "answer is 42"
+  },
+
+
+  "game objects": [
+    {
+      "type": "game object",
+      "position": [1, 2, 3],
+      "mesh": "cube",
+      "texture": "stone",
+      "object data": {}
+    },
+    {
+      "type": "chest",
+      "position": [1, 2, 3],
+      "mesh": "donut",
+      "texture": "wood",
+      "object data": {
+        "items": ["stick", "apple", "paper"]
+      }
+    }
+  ],
+
+  "meshes": {
+    "cube": {
+      "type": "cube"
+    },
+    "donut": {
+      "type" : "obj",
+      "obj file": "obj-files/donut_low.obj"
+    },
+    "monkey": {
+      "type" : "obj",
+      "obj file": "obj-files/monkey.obj"
+    }
+  },
+
+  "textures": {
+    "dirt": {
+      "texture": "textures/dirt.png"
+    },
+    "stone": {
+      "texture": "textures/stone.png"
+    },
+    "wood": {
+      "texture": "textures/wood.png"
+    }
+  }
+}

@@ -34,7 +34,7 @@ public final class GameObjectReader implements AutoCloseable {
   private String texture;
   private HashMap<String, Object> objectData;
 
-  private ArrayList<String> jsonFilePathStack = new ArrayList<>();
+  private ArrayList<String> otherFilePathStack = new ArrayList<>();
 
   // ===============================================================================================
   // Read
@@ -47,12 +47,13 @@ public final class GameObjectReader implements AutoCloseable {
       if (OTHER_FILE_TYPE_VALUE.equals(type)) {
         String jsonPath = (String) object.get(OTHER_FILE_PATH_KEY);
 
-        if (jsonFilePathStack.contains(jsonPath)) {
+        if (otherFilePathStack.contains(jsonPath)) {
           return null;
         }
 
-        jsonFilePathStack.add(jsonPath);
+        otherFilePathStack.add(jsonPath);
         read(jsonPath);
+        otherFilePathStack.clear();
       }
       
       if (object.containsKey(POSITION_KEY)) {
@@ -90,12 +91,13 @@ public final class GameObjectReader implements AutoCloseable {
       if ("json".equals(type)) {
         String jsonPath = (String) object.get("path");
 
-        if (jsonFilePathStack.contains(jsonPath)) {
+        if (otherFilePathStack.contains(jsonPath)) {
           return null;
         }
 
-        jsonFilePathStack.add(jsonPath);
+        otherFilePathStack.add(jsonPath);
         read(jsonPath);
+        otherFilePathStack.clear();
       }
 
       if (object.containsKey(POSITION_KEY)) {

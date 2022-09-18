@@ -22,7 +22,7 @@ public class FloatArray implements ShaderDataSource<FloatBuffer> {
   }
 
   @Override
-  public long getMaxBufSize() {
+  public int getMaxBufSize() {
     return buffer.capacity();
   }
 

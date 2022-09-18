@@ -9,6 +9,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class Mesh implements MeshInterface {
+  private String name;
   private FloatArray vertices;
   private FloatArray textureCoords;
   private FloatArray normals;
@@ -21,9 +22,10 @@ public class Mesh implements MeshInterface {
       "normals modified", "indices changed", "indices modified");
 
 
-  public Mesh(Collection<Vector3f> initVertices, Collection<Vector2f> initTextureCoords,
+  public Mesh(String name, Collection<Vector3f> initVertices, Collection<Vector2f> initTextureCoords,
       Collection<Vector3f> initNormals, Collection<Integer> initIndices) {
-
+    this.name = name;
+    
     setVerticesData(initVertices);
     setTextureCoordsData(initTextureCoords);
     setNormalsData(initNormals);
@@ -63,7 +65,7 @@ public class Mesh implements MeshInterface {
 
   @Override
   public long getVerticesCount() {
-    return vertices.getMaxBufSize();
+    return vertices.getMaxBufSize() / 4;
   }
 
   // ===============================================================================================
@@ -95,7 +97,7 @@ public class Mesh implements MeshInterface {
 
   @Override
   public long getTextureCoordsCount() {
-    return textureCoords.getMaxBufSize();
+    return textureCoords.getMaxBufSize() / 2;
   }
 
   // ===============================================================================================
@@ -127,18 +129,30 @@ public class Mesh implements MeshInterface {
 
   @Override
   public long getNormalsCount() {
-    return normals.getMaxBufSize();
+    return normals.getMaxBufSize() / 4;
   }
+
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
 
   // ===============================================================================================
   // Indices
   // ===============================================================================================
   public final void setIndicesData(Collection<Integer> initIndices) {
-    final long oldSize = (indices == null) ? -1 : indices.getMaxBufSize();
-    final long newSize = initIndices.size() * 2L;
+    int oldSize = (indices == null) ? -1 : indices.getMaxBufSize();
+    int newSize = initIndices.size();
 
     if (indices == null || oldSize <= newSize) {
-      indices = new IntArray(initIndices.size());
+      indices = new IntArray(newSize);
     }
     for (Integer face : initIndices) {
       indices.getBuffer().put(face);
@@ -158,9 +172,13 @@ public class Mesh implements MeshInterface {
   }
 
   @Override
-  public long getIndicesCount() {
-    return indices.getMaxBufSize();
+  public long getfacesCount() {
+    long result = indices.getMaxBufSize() / 9;
+
+    return result;
   }
+
+  
 
   // ===============================================================================================
   // Encompassing sphere

@@ -14,25 +14,28 @@ const float EPSILON = 1e-4;
 // Output
 out vec4 fragColor;
 
-// General uniforms
-//uniform ivec2 u_resolution;
-uniform float u_time;
-
-// Camera uniforms
+// uniforms
 layout(location = 2) uniform float u_cameraFOV;
 layout(location = 3) uniform mat4 u_pointCameraMatrix;
 layout(location = 4) uniform mat3 u_vectorCameraMatrix;
+layout(location = 5) uniform ivec2 u_resolution;
+layout(location = 6) uniform float u_time;
 
 
-// ==================================================================================================================================================
+// =====================================================================================================================
 // Structs
-// ==================================================================================================================================================
-struct Mesh {
-  vec4 center;
-  int offset;
-  int count;
-  int textureIndex;
-  float radius2;
+// =====================================================================================================================
+struct MeshInstance {
+  mat4 modelMatrix;     //    0
+  mat4 normalMatrix;    //   64
+  vec4 center;          //  128
+  float radius2;        //  144
+  int facesOffset;      //  148
+  int facesCount;       //  152
+  int textureIndex;     //  156
+  int verticesOffset;   //  160
+  int normalsOffset;    //  164
+  int verticesSTOffset; //  168
 };
 
 
@@ -60,9 +63,15 @@ struct Light {
   bool isDistantLight;
 };
 
-// ==================================================================================================================================================
+struct Vertex {
+  int indexPos;
+  int indexST;
+  int indexNormal;
+};
+
+// =====================================================================================================================
 // SSBOs
-// ==================================================================================================================================================
+// =====================================================================================================================
 
 layout(std430, binding = 0) buffer verticesPosBufferLayout {
   vec4 verticesPos[];
@@ -76,17 +85,17 @@ layout(std430, binding = 2) buffer normalsBufferLayout {
   vec4 verticesN[];
 };
 
-layout(std430, binding = 3) buffer indicesBufferLayout {
-  int indices[];
+layout(std430, binding = 3) buffer facesBufferLayout {
+  Vertex faces[][3];
 };
 
 layout(std430, binding = 4) buffer meshesBufferLayout {
-  Mesh meshes[];
+  MeshInstance meshInstances[];
 };
 
-// ==================================================================================================================================================
+// =====================================================================================================================
 // Scene
-// ==================================================================================================================================================
+// =====================================================================================================================
 
 const Light lights[1] = Light[1](
   //Light(vec3(0, 5, 0), vec3(1, 1, 1), 130, true)
@@ -94,9 +103,9 @@ const Light lights[1] = Light[1](
 );
 
 
-// ==================================================================================================================================================
+// =====================================================================================================================
 // Get texture
-// ==================================================================================================================================================
+// =====================================================================================================================
 vec3 getTexture(vec2 texCoord, int index) {
   if (index == 0) {
     return vec3(1, 0, 1) * ((mod(texCoord.x * 10, 2) < 1 ^^ mod(texCoord.y * 10, 2) < 1) ? 0.5 : 1);
@@ -106,9 +115,9 @@ vec3 getTexture(vec2 texCoord, int index) {
 }
 
 
-// ==================================================================================================================================================
+// =====================================================================================================================
 // Intersect sphere
-// ==================================================================================================================================================
+// =====================================================================================================================
 bool intersectSphere(in vec3 origin, in vec3 direction, in vec3 center, in float radius2, out float t) {
   float t0, t1;
 
@@ -146,10 +155,19 @@ bool intersectSphere(in vec3 origin, in vec3 direction, in vec3 center, in float
   return true;
 }
 
-// ==================================================================================================================================================
+// =====================================================================================================================
 // Intersect triangle
-// ==================================================================================================================================================
-bool intersectTriangle(in vec3 origin, in vec3 direction, in vec3 v0, in vec3 v1, in vec3 v2, out float t, out float u, out float v) {
+// =====================================================================================================================
+bool intersectTriangle(
+    in vec3 origin, 
+    in vec3 direction, 
+    in vec3 v0, 
+    in vec3 v1, 
+    in vec3 v2, 
+    out float t, 
+    out float u, 
+    out float v) {
+
   vec3 v2v0 = v0 - v2;
   vec3 v2v1 = v1 - v2;
   vec3 pvec = cross(direction, v2v1);
@@ -172,37 +190,47 @@ bool intersectTriangle(in vec3 origin, in vec3 direction, in vec3 v0, in vec3 v1
   return t >= 0;
 }
 
-// ==================================================================================================================================================
+// =====================================================================================================================
 // Ray
-// ==================================================================================================================================================
+// =====================================================================================================================
 bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
   bool hasHit = false;
 
   int textureIndex;
   int indexNear;
+  int meshIndexNear;
   float uNear, vNear;
 
   float t, u, v;
 
   // Loop through the meshes
-  for(int i = 0; i < meshes.length(); i++) {
-    Mesh m = meshes[i];
+  for(int i = 0; i < meshInstances.length(); i++) {
+    
+    MeshInstance m = meshInstances[i];
+
+    if (m.facesCount == 0) {
+      continue;
+    }
 
     // If ray comes close to the mesh, check intersection with mesh
     if (intersectSphere(origin, direction, m.center.xyz, m.radius2, t) && t < tNear) {
 
       // Loop through all the triangles making up the mesh
-      for (int j = 0; j < m.count; j++) {
+      for (int j = 0; j < m.facesCount; j++) {
 
         // Check for intersection with the triangle
-        int index = (j + m.offset) * 9;
-        if (intersectTriangle(origin, direction, 
-          verticesPos[indices[index + 0]].xyz, 
-          verticesPos[indices[index + 3]].xyz, 
-          verticesPos[indices[index + 6]].xyz, t, u, v) && t < tNear) {
+        if (intersectTriangle(
+              origin, 
+              direction, 
+              (m.modelMatrix * verticesPos[m.verticesOffset + faces[m.facesOffset + j][0].indexPos]).xyz, 
+              (m.modelMatrix * verticesPos[m.verticesOffset + faces[m.facesOffset + j][1].indexPos]).xyz, 
+              (m.modelMatrix * verticesPos[m.verticesOffset + faces[m.facesOffset + j][2].indexPos]).xyz, 
+              t, u, v
+            ) && t < tNear) {
           
           // Intersection found
-          indexNear = index;
+          meshIndexNear = i;
+          indexNear = j;
           uNear = u;
           vNear = v;
 
@@ -213,15 +241,17 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
     }
   }
 
+  MeshInstance m = meshInstances[meshIndexNear];
+  
   vec2 texCoord = 
-    verticesST[indices[indexNear + 1]] * uNear +
-    verticesST[indices[indexNear + 4]] * vNear +
-    verticesST[indices[indexNear + 7]] * (1-uNear-vNear);
+    verticesST[m.verticesSTOffset + faces[m.facesOffset + indexNear][0].indexST] * uNear +
+    verticesST[m.verticesSTOffset + faces[m.facesOffset + indexNear][1].indexST] * vNear +
+    verticesST[m.verticesSTOffset + faces[m.facesOffset + indexNear][2].indexST] * (1-uNear-vNear);
 
   vec3 normal = 
-    verticesN[indices[indexNear + 2]].xyz * uNear +
-    verticesN[indices[indexNear + 5]].xyz * vNear +
-    verticesN[indices[indexNear + 8]].xyz * (1-uNear-vNear);
+    (m.normalMatrix * verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][0].indexNormal]).xyz * uNear +
+    (m.normalMatrix * verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][1].indexNormal]).xyz * vNear +
+    (m.normalMatrix * verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][2].indexNormal]).xyz * (1-uNear-vNear);
 
   hit = createRayHit();
   hit.position = origin + tNear * direction;
@@ -233,10 +263,11 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
   return hasHit;
 }
 
-// ==================================================================================================================================================
+// =====================================================================================================================
 // Main
-// ==================================================================================================================================================
+// =====================================================================================================================
 void main() {
+  
   for (int i = 0; i < verticesN.length(); i++) {
     verticesN[i].xyz = normalize(verticesN[i].xyz);
   }
@@ -246,7 +277,6 @@ void main() {
   // ===================================================================================================================
 
   // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
-  vec2 u_resolution = vec2(800, 800);
   vec2 PixelCoordScreenSpace = (2 * gl_FragCoord.xy - u_resolution) / u_resolution.y;
   vec2 PixelCoordImageSpace = PixelCoordScreenSpace * tan(u_cameraFOV / 2);
   vec3 PixelCoordCameraSpace = vec3(PixelCoordImageSpace.xy, -1);
@@ -264,9 +294,9 @@ void main() {
     vec3 albedo = hit.albedo;
     color = vec3(0);
 
-    // ========================================================================================
+    // =================================================================================================================
     // Calculate lighting
-    // ========================================================================================
+    // =================================================================================================================
     for(int i = 0; i < lights.length; i++) {
       Light light = lights[i];
 
@@ -278,7 +308,8 @@ void main() {
         vec3 direction = light.position;
 
         if(!ray(origin, direction, maxDist, lightHit)) {
-          vec3 diffuseColor = albedo / PI * lights[i].intensity * lights[i].color * clamp(dot(hit.normal, direction), 0, 1);
+          vec3 diffuseColor = albedo / PI * lights[i].intensity * 
+            lights[i].color * clamp(dot(hit.normal, direction), 0, 1);
           color += diffuseColor;
         }
       } else {
@@ -287,7 +318,8 @@ void main() {
         float lightDist = distance(light.position, origin);
 
         if(!ray(origin, direction, lightDist, lightHit)) {
-          vec3 diffuseColor = albedo / PI * lights[i].intensity * lights[i].color * clamp(dot(hit.normal, direction), 0, 1);
+          vec3 diffuseColor = albedo / PI * lights[i].intensity * 
+            lights[i].color * clamp(dot(hit.normal, direction), 0, 1);
           color += diffuseColor / (4 * PI * lightDist * lightDist);
         }
       }

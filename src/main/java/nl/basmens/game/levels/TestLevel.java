@@ -2,33 +2,41 @@ package nl.basmens.game.levels;
 
 import nl.basmens.game.meshes.Triangles;
 import nl.basmens.renderer.Renderable;
-import nl.basmens.util.Mesh;
 import nl.basmens.util.MeshInstance;
 import nl.basmens.util.MeshInterface;
 import nl.basmens.util.ObjFileReader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joml.Matrix4f;
 
 /**
  * Represends a level in the game.
  */
 public class TestLevel extends AbstractLevel implements Renderable {
-  private Triangles triangles;
-  private Mesh mesh;
+  private static final Logger LOGGER = LogManager.getLogger(TestLevel.class);
+
+  private MeshInterface triangles;
+  private MeshInterface donut;
+  private MeshInterface cube;
+  private MeshInterface monkey;
 
 
   // ===============================================================================================
   // Constructor
   // ===============================================================================================
   public TestLevel() {
-    triangles = new Triangles();
     getRenderer().register(this);
 
     try (ObjFileReader reader = new ObjFileReader()) {
-      //mesh = reader.read("obj-files/cube.obj").getMesh();
-      //mesh = reader.read("obj-files/donut_low.obj").getMesh();
-      mesh = reader.read("obj-files/monkey.obj").getMesh();
+      triangles = new Triangles();
+      cube = reader.read("cube", "obj-files/cube.obj").getMesh();
+      donut = reader.read("donut", "obj-files/donut_low.obj").getMesh();
+      monkey = reader.read("monkey", "obj-files/monkey.obj").getMesh();
     } catch (Exception e) {
+      String message = "Exception raised while reading meshes: " + e.getMessage();
+
+      LOGGER.warn(message);
       // TODO: handle exception
-      System.out.println("AHHHHHHHHHHHHH, in TestLevel");
     }
   }
 
@@ -40,25 +48,28 @@ public class TestLevel extends AbstractLevel implements Renderable {
    * 
    */
   public void update(double deltaTime) {
-    triangles.update(deltaTime);
+    // TODO: implement this
   }
 
   @Override
   public MeshInterface[] getMeshes() {
-    // return new MeshInterface[] {triangles};
-    return new MeshInterface[] {mesh};
+    return new MeshInterface[] {cube, monkey, triangles, donut};
   }
 
   @Override
   public MeshInstance[] getMeshInstances() {
-    // return new MeshInstance[] {new MeshInstance(triangles)};
-    return new MeshInstance[] {new MeshInstance(mesh)};
+    return new MeshInstance[] {
+      new MeshInstance(monkey, (new Matrix4f()).translate(-1.5F, 0, 0)),
+      new MeshInstance(cube, (new Matrix4f()).translate(1.5F, 0, 0)),
+      new MeshInstance(triangles, (new Matrix4f()).translate(0, 1.5F, 0)),
+      // new MeshInstance(donut, (new Matrix4f()).scale(0.2F).translate(0, -5F, 0))
+    };
   }
 
 
   @Override
-  public long getMaxMeshInstanceCount() {
-    return 1;
+  public int getMaxMeshInstanceCount() {
+    return 5;
   }
 
 }

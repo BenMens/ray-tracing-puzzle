@@ -72,7 +72,7 @@ public class Triangles implements MeshInterface {
 
   @Override
   public long getVerticesCount() {
-    return vertices.getMaxBufSize();
+    return vertices.getMaxBufSize() / 4;
   }
 
   @Override
@@ -82,7 +82,7 @@ public class Triangles implements MeshInterface {
 
   @Override
   public long getNormalsCount() {
-    return normals.getMaxBufSize();
+    return normals.getMaxBufSize() / 4;
   }
 
   @Override
@@ -92,7 +92,7 @@ public class Triangles implements MeshInterface {
 
   @Override
   public long getTextureCoordsCount() {
-    return textureCoords.getMaxBufSize();
+    return textureCoords.getMaxBufSize() / 2;
   }
 
   @Override
@@ -101,8 +101,8 @@ public class Triangles implements MeshInterface {
   }
 
   @Override
-  public long getIndicesCount() {
-    return indices.getMaxBufSize();
+  public long getfacesCount() {
+    return indices.getMaxBufSize() / 9;
   }
 
   @Override
@@ -113,5 +113,11 @@ public class Triangles implements MeshInterface {
   @Override
   public float getRadius2() {
     return 19;
+  }
+
+
+  @Override
+  public String getName() {
+    return this.getClass().getName();
   }
 }

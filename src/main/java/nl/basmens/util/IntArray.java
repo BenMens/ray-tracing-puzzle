@@ -22,7 +22,7 @@ public class IntArray implements ShaderDataSource<IntBuffer> {
   }
 
   @Override
-  public long getMaxBufSize() {
+  public int getMaxBufSize() {
     return buffer.capacity();
   }
 

@@ -20,9 +20,11 @@ public interface MeshInterface {
 
   ShaderDataSource<IntBuffer> getIndicesData();
   
-  long getIndicesCount();
+  long getfacesCount();
 
   Vector3f getCenter();
 
   float getRadius2();
+
+  String getName();
 }

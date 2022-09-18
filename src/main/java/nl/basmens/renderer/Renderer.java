@@ -8,8 +8,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import nl.basmens.util.IoUtil;
 import nl.basmens.util.MeshInstance;
 import nl.basmens.util.MeshInterface;
@@ -30,12 +32,15 @@ public class Renderer {
   private static final int VERTICES_POS_BUFFER_BINDING = 0;
   private static final int TEXTURE_COORDS_BUFFER_BINDING = 1;
   private static final int NORMALS_BUFFER_BINDING = 2;
-  private static final int INDICES_BUFFER_BINDING = 3;
+  private static final int FACES_BUFFER_BINDING = 3;
   private static final int MESHES_BUFFER_BINDING = 4;
   
   private static final int CAMERA_FOV_UNIFORM_LOCATION = 2;
   private static final int CAMERA_POINT_MATRIX_UNIFORM_LOCATION = 3;
   private static final int CAMERA_VECTOR_MATRIX_UNIFORM_LOCATION = 4;
+  private static final int RESOLUTION_UNIFORM_LOCATION = 5;
+
+  private static final int MESH_INSTANCE_SIZE = 176;
 
   private ArrayList<Renderable> renderables;
 
@@ -45,9 +50,10 @@ public class Renderer {
   private int verticesPosBuffer;
   private int normalsBuffer;
   private int textureCoordsBuffer;
-  private int indicesBuffer;
+  private int facesBuffer;
   private int meshesBuffer;
 
+  private IdentityHashMap<String, AugumentedMesh> meshRegistry = new IdentityHashMap<>();
 
   // ===============================================================================================
   // Constructor
@@ -90,8 +96,11 @@ public class Renderer {
 
     String fragmentShadersPath = "shaders/fragment";
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    try (InputStream in = classLoader.getResourceAsStream(fragmentShadersPath);
-        BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+    try (
+          InputStream in = classLoader.getResourceAsStream(fragmentShadersPath);
+          BufferedReader br = new BufferedReader(new InputStreamReader(in))
+        ) {
+
       String resource;
 
       while ((resource = br.readLine()) != null) {
@@ -102,7 +111,10 @@ public class Renderer {
         compileShader(f, fs);
 
         int program = compileShaderProgram(v, f);
+
+        @SuppressWarnings("squid:S4248")
         String baseName = resource.split("\\.(?=[^\\.]+$)")[0];
+
         shaderPrograms.put(baseName, program);
       }
     }
@@ -111,6 +123,14 @@ public class Renderer {
 
     createVao();
     createShaderBuffers();
+    collectMeshes();
+    collectMeshInstances();
+
+    updateVerticesData();
+    updateTextureCoordsData();
+    updateNormalsData();
+    updateFacesData();
+    updateMeshesData();
   }
 
   // ===============================================================================================
@@ -201,122 +221,174 @@ public class Renderer {
     glBindVertexArray(0);
   }
 
-  void createShaderBuffers() {
-
-    long verticesBufferSize = 0;
-    long normalsBufferSize = 0;
-    long textureCoordsBufferSize = 0;
-    long indicesBufferSize = 0;
-    long meshesBufferSize = 0;
+  void collectMeshes() {
+    int verticesBufferSize = 0;
+    int normalsBufferSize = 0;
+    int textureCoordsBufferSize = 0;
+    int facesBufferSize = 0;
     for (Renderable r : renderables) {
-      meshesBufferSize += r.getMaxMeshInstanceCount();
-
       for (MeshInterface m : r.getMeshes()) {
-        verticesBufferSize += m.getVerticesCount();
-        normalsBufferSize += m.getNormalsCount();
-        textureCoordsBufferSize += m.getTextureCoordsCount();
-        indicesBufferSize += m.getIndicesCount();
+        if (meshRegistry.get(m.getName()) == null) {
+          meshRegistry.put(m.getName(), 
+            new AugumentedMesh(
+                  m,
+                  verticesBufferSize,
+                  textureCoordsBufferSize,
+                  normalsBufferSize,
+                  facesBufferSize));
+
+          verticesBufferSize += m.getVerticesCount();
+          normalsBufferSize += m.getNormalsCount();
+          textureCoordsBufferSize += m.getTextureCoordsCount();
+          facesBufferSize += m.getfacesCount();          
+        }
       }
     }
 
-    verticesPosBuffer = glGenBuffers();
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, verticesPosBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, verticesBufferSize * 4, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, verticesBufferSize * 16L, GL_DYNAMIC_DRAW);
 
-    textureCoordsBuffer = glGenBuffers();
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, textureCoordsBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, textureCoordsBufferSize * 4, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, textureCoordsBufferSize * 8L, GL_DYNAMIC_DRAW);
 
-    normalsBuffer = glGenBuffers();
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, normalsBufferSize * 4, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, normalsBufferSize * 16L, GL_DYNAMIC_DRAW);
 
-    indicesBuffer = glGenBuffers();
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, indicesBufferSize * 4, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, facesBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, facesBufferSize * 36L, GL_DYNAMIC_DRAW);
+  }
 
-    meshesBuffer = glGenBuffers();
+  void collectMeshInstances() {
+    long meshesBufferSize = 0;
+    for (Renderable r : renderables) {
+      meshesBufferSize += r.getMaxMeshInstanceCount();
+    }
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, meshesBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, meshesBufferSize * 32, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, meshesBufferSize * MESH_INSTANCE_SIZE, GL_DYNAMIC_DRAW);
+  }
+
+  void createShaderBuffers() {
+
+    verticesPosBuffer = glGenBuffers();
+    textureCoordsBuffer = glGenBuffers();
+    normalsBuffer = glGenBuffers();
+    facesBuffer = glGenBuffers();
+    meshesBuffer = glGenBuffers();
   }
   
+  void updateVerticesData() {
+    try (MemoryStack stack = stackPush()) {
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, verticesPosBuffer);
+
+      for (Renderable r : renderables) {
+        for (MeshInterface m : r.getMeshes()) {
+          AugumentedMesh am = meshRegistry.get(m.getName());
+
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, am.verticesOffset * 16L, 
+              m.getVerticesData().getData(stack));
+        }
+      }
+    }
+  }
+
+  void updateNormalsData() {
+    try (MemoryStack stack = stackPush()) {
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
+      for (Renderable r : renderables) {
+        for (MeshInterface m : r.getMeshes()) {
+          AugumentedMesh am = meshRegistry.get(m.getName());
+
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, am.normalsOffset * 16L, 
+              m.getNormalsData().getData(stack));
+        }
+      }
+    }
+  }
+
+
+  void updateTextureCoordsData() {
+    try (MemoryStack stack = stackPush()) {
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, textureCoordsBuffer);
+
+      for (Renderable r : renderables) {
+        for (MeshInterface m : r.getMeshes()) {
+          AugumentedMesh am = meshRegistry.get(m.getName());
+
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, am.textureCoordOffset * 8L, 
+              m.getTextureCoordsData().getData(stack));
+        }
+      }
+    }
+  }
+
+  void updateFacesData() {
+    try (MemoryStack stack = stackPush()) {
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, facesBuffer);
+      for (Renderable r : renderables) {
+        for (MeshInterface m : r.getMeshes()) {
+          AugumentedMesh am = meshRegistry.get(m.getName());
+
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, am.facesOffset * 36L, 
+              m.getIndicesData().getData(stack));
+        }
+      }
+    }
+  }
+
+
+  void updateMeshesData() {
+    try (MemoryStack stack = stackPush()) {
+      glBindBuffer(GL_SHADER_STORAGE_BUFFER, meshesBuffer);
+      long meshesOffset = 0;
+      for (Renderable r : renderables) {
+        for (MeshInstance mi : r.getMeshInstances()) {
+          ByteBuffer meshBufferData = stack.malloc(MESH_INSTANCE_SIZE);
+          MeshInterface m = mi.mesh();
+          AugumentedMesh am = meshRegistry.get(m.getName());
+
+          mi.modelMatrix().get(meshBufferData);
+
+          mi.modelMatrix().normal().get(64, meshBufferData);
+
+          meshBufferData
+              .position(128)
+              .putFloat(m.getCenter().x).putFloat(m.getCenter().y).putFloat(m.getCenter().z).putFloat(1)
+              .putFloat(m.getRadius2())
+              .putInt(am.facesOffset)  // facesOffset
+              .putInt((int) m.getfacesCount())  // facesCount
+              .putInt(0)  // textureIndex
+              .putInt(am.verticesOffset)  // verticesOffset
+              .putInt(am.normalsOffset)  // normalsOffset
+              .putInt(am.textureCoordOffset)  // verticesSTOffset
+              .flip();
+  
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, meshesOffset * MESH_INSTANCE_SIZE, meshBufferData);
+          meshesOffset++;
+        }
+      }
+    }
+  }
 
   // ===============================================================================================
   // Render
   // ===============================================================================================
-  public void render(Camera camera) {
+  public void render(Camera camera, int width, int height) {
 
     try (MemoryStack stack = stackPush()) {
+      // updateVerticesData();
+      // updateTextureCoordsData();
+      // updateNormalsData();
+      // updateFacesData();
+      // updateMeshesData();
 
-      glBindBuffer(GL_SHADER_STORAGE_BUFFER, verticesPosBuffer);
-      long vertexOffset = 0;
-      for (Renderable r : renderables) {
-        for (MeshInterface m : r.getMeshes()) {
-          glBufferSubData(GL_SHADER_STORAGE_BUFFER, vertexOffset * 4, 
-              m.getVerticesData().getData(stack));
-          vertexOffset += m.getVerticesCount();
-        }
-      }
-
-      glBindBuffer(GL_SHADER_STORAGE_BUFFER, textureCoordsBuffer);
-      long textureCoordsOffset = 0;
-      for (Renderable r : renderables) {
-        for (MeshInterface m : r.getMeshes()) {
-          glBufferSubData(GL_SHADER_STORAGE_BUFFER, textureCoordsOffset * 4, 
-              m.getTextureCoordsData().getData(stack));
-          textureCoordsOffset += m.getTextureCoordsCount();
-        }
-      }
-
-      glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalsBuffer);
-      long normalsOffset = 0;
-      for (Renderable r : renderables) {
-        for (MeshInterface m : r.getMeshes()) {
-          glBufferSubData(GL_SHADER_STORAGE_BUFFER, normalsOffset * 4, 
-              m.getNormalsData().getData(stack));
-          normalsOffset += m.getNormalsCount();
-        }
-      }
-
-      glBindBuffer(GL_SHADER_STORAGE_BUFFER, indicesBuffer);
-      long indicesOffset = 0;
-      for (Renderable r : renderables) {
-        for (MeshInterface m : r.getMeshes()) {
-          glBufferSubData(GL_SHADER_STORAGE_BUFFER, indicesOffset * 4, 
-              m.getIndicesData().getData(stack));
-          indicesOffset += m.getIndicesCount();
-        }
-      }
-
-      glBindBuffer(GL_SHADER_STORAGE_BUFFER, meshesBuffer);
-      long meschesOffset = 0;
-      for (Renderable r : renderables) {
-        for (MeshInstance mi : r.getMeshInstances()) {
-          ByteBuffer meshBufferData = stack.malloc(32);
-          MeshInterface m = mi.mesh();
-  
-          meshBufferData
-              .putFloat(m.getCenter().x)
-              .putFloat(m.getCenter().y)
-              .putFloat(m.getCenter().z)
-              .putFloat(1)
-              .putInt(0)  // Offset
-              .putInt((int) Math.floorDiv(m.getIndicesCount(), 9))  // Count
-              .putInt(0)  // Texture index
-              .putFloat(m.getRadius2())
-              .flip();
-  
-          glBufferSubData(GL_SHADER_STORAGE_BUFFER, meschesOffset * 32, meshBufferData);
-          meschesOffset += r.getMaxMeshInstanceCount();
-        }
-      }
 
       glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, VERTICES_POS_BUFFER_BINDING, verticesPosBuffer);
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, NORMALS_BUFFER_BINDING, normalsBuffer);
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, TEXTURE_COORDS_BUFFER_BINDING, textureCoordsBuffer);
-      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INDICES_BUFFER_BINDING, indicesBuffer);
+      glBindBufferBase(GL_SHADER_STORAGE_BUFFER, FACES_BUFFER_BINDING, facesBuffer);
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, MESHES_BUFFER_BINDING, meshesBuffer);
 
       glUseProgram(this.shaderPrograms.get("ray_tracer"));
@@ -333,6 +405,14 @@ public class Renderer {
 
       glBindVertexArray(vao);
 
+      IntBuffer resolutionBuffer = stack.mallocInt(2);
+      resolutionBuffer
+          .put(width)
+          .put(height)
+          .flip();
+      glUniform2iv(RESOLUTION_UNIFORM_LOCATION, resolutionBuffer);
+
+
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -342,5 +422,13 @@ public class Renderer {
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, VERTICES_POS_BUFFER_BINDING, 0);
       glBindBufferBase(GL_SHADER_STORAGE_BUFFER, NORMALS_BUFFER_BINDING, 0);
     }
+  }
+
+  private record AugumentedMesh(
+      MeshInterface meshInstance, 
+      int verticesOffset, 
+      int textureCoordOffset, 
+      int normalsOffset, 
+      int facesOffset) {
   }
 }

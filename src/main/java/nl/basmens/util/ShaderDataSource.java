@@ -12,7 +12,7 @@ public interface ShaderDataSource<T extends Buffer> {
    *
    * @return The maximum number of instances.
    */
-  long getMaxBufSize();
+  int getMaxBufSize();
 
 
   /**

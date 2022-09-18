@@ -2,7 +2,7 @@ package nl.basmens;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL43C.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -20,7 +20,6 @@ import nl.basmens.game.levels.TestLevel;
 import nl.basmens.util.Time;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -172,7 +171,7 @@ public class PuzzleGame implements GlfwEventSource {
     player.init();
   }
 
-  // =============================================================================================
+  // ===============================================================================================
   // Loop
   // ===============================================================================================
   private void loop() {
@@ -182,29 +181,34 @@ public class PuzzleGame implements GlfwEventSource {
 
     glClearColor(0, 0, 0, 1);
 
-    while (!glfwWindowShouldClose(window)) {
-      // Poll events
-      glfwPollEvents();
+    try (MemoryStack stack = stackPush()) {
 
-      if (deltaTime >= 0) {
-        level.update(deltaTime);
-        player.update(deltaTime);
+      IntBuffer w = stack.mallocInt(1);
+      IntBuffer h = stack.mallocInt(1);
+
+      while (!glfwWindowShouldClose(window)) {
+
+        // Poll events
+        glfwPollEvents();
+
+        if (deltaTime >= 0) {
+          level.update(deltaTime);
+          player.update(deltaTime);
+        }
+
+        glfwGetWindowSize(window, w, h);
+        int width = w.get(0);
+        int height = h.get(0);
+
+        glViewport(0, 0, width, height);
+
+        level.render(player.getCamera(), width, height);
+        glfwSwapBuffers(window);
+
+        endTime = Time.getTimeSinceProgramStart();
+        deltaTime = endTime - beginTime;
+        beginTime = endTime;
       }
-
-      IntBuffer w = BufferUtils.createIntBuffer(4);
-      IntBuffer h = BufferUtils.createIntBuffer(4);
-      glfwGetWindowSize(window, w, h);
-      int width = w.get(0);
-      int height = h.get(0);
-
-      glViewport(0, 0, width, height);
-
-      level.render(player.getCamera());
-      glfwSwapBuffers(window);
-
-      endTime = Time.getTimeSinceProgramStart();
-      deltaTime = endTime - beginTime;
-      beginTime = endTime;
     }
   }
 

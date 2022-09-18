@@ -13,13 +13,21 @@ import org.joml.Vector3f;
 public final class ObjFileReader implements AutoCloseable {
   private static final Pattern PATTERN = Pattern.compile("((^\\p{IsAlphabetic}+\\b)|-?[0-9.]+)");
 
-  private ArrayList<Vector3f> vertices = new ArrayList<>();
-  private ArrayList<Vector2f> verticesT = new ArrayList<>();
-  private ArrayList<Vector3f> verticesN = new ArrayList<>();
-  private ArrayList<Integer> faces = new ArrayList<>();
+  private ArrayList<Vector3f> vertices;
+  private ArrayList<Vector2f> verticesT;
+  private ArrayList<Vector3f> verticesN;
+  private ArrayList<Integer> faces;
+  private String name;
 
 
-  public ObjFileReader read(String path) throws IOException {
+  public ObjFileReader read(String name, String path) throws IOException {
+    this.name = name;
+    this.vertices = new ArrayList<>();
+    this.verticesT = new ArrayList<>();
+    this.verticesN = new ArrayList<>();
+    this.faces = new ArrayList<>();
+  
+
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try (InputStream in = classLoader.getResourceAsStream(path);
         BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
@@ -70,7 +78,7 @@ public final class ObjFileReader implements AutoCloseable {
 
 
   public Mesh getMesh() {
-    return new Mesh(vertices, verticesT, verticesN, faces);
+    return new Mesh(name, vertices, verticesT, verticesN, faces);
   }
 
 

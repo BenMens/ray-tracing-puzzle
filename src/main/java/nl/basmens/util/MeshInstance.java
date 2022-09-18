@@ -1,3 +1,5 @@
 package nl.basmens.util;
 
-public record MeshInstance(MeshInterface mesh) {}
+import org.joml.Matrix4f;
+
+public record MeshInstance(MeshInterface mesh, Matrix4f modelMatrix) {}

@@ -39,8 +39,8 @@ public abstract class AbstractLevel implements LevelEventSource {
   // ===============================================================================================
   // Render
   // ===============================================================================================
-  public void render(Camera camera) {
-    renderer.render(camera);
+  public void render(Camera camera, int width, int height) {
+    renderer.render(camera, width, height);
   }
 
 

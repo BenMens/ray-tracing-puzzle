@@ -1,7 +1,7 @@
 package nl.basmens.renderer;
 
-import nl.basmens.util.MeshInterface;
 import nl.basmens.util.MeshInstance;
+import nl.basmens.util.MeshInterface;
 
 /**
  * Represends an object than can be rendered.
@@ -11,5 +11,5 @@ public interface Renderable {
 
   MeshInstance[] getMeshInstances();
 
-  long getMaxMeshInstanceCount();
+  int getMaxMeshInstanceCount();
 }

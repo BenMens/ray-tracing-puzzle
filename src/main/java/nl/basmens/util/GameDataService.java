@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import nl.basmens.events.listeners.EventDispatcher;
+import nl.basmens.events.listeners.Observer;
+import nl.basmens.events.types.GameDataServiceEvent;
 import nl.basmens.game.gameobjects.Chest;
 import nl.basmens.game.gameobjects.GameObject;
 import nl.basmens.game.levels.AbstractLevel;
@@ -51,7 +54,18 @@ public final class GameDataService {
   private static final String TEXTURES_REFERENCE_TYPE_VALUE = "json";
   private static final String TEXTURES_REFERENCE_PATH_KEY = "path";
 
-  private static final ObjFileReader objFileReader = new ObjFileReader();
+  public static final String CLEAR_EVENT = "clear";
+  public static final String START_READING_LEVEL_EVENT = "start reading level";
+  public static final String FINISH_READING_LEVEL_EVENT = "finish reading level";
+  public static final String GAME_OBJECT_ADDED_EVENT = "object added";
+  public static final String MESH_ADDED_EVENT = "mesh added";
+  public static final String TEXTURE_ADDED_EVENT = "texture added";
+
+  private EventDispatcher<GameDataServiceEvent> eventDispatcher =
+      new EventDispatcher<>(CLEAR_EVENT, START_READING_LEVEL_EVENT, FINISH_READING_LEVEL_EVENT, GAME_OBJECT_ADDED_EVENT,
+          MESH_ADDED_EVENT, TEXTURE_ADDED_EVENT);
+
+  private ObjFileReader objFileReader = new ObjFileReader();
 
   private AbstractLevel level;
 
@@ -72,6 +86,20 @@ public final class GameDataService {
     return instance;
   }
 
+  // ===============================================================================================
+  // Register
+  // ===============================================================================================
+  public Observer<GameDataServiceEvent> register(String eventType, Observer<GameDataServiceEvent> observer) {
+    return eventDispatcher.register(eventType, observer);
+  }
+
+  // ===============================================================================================
+  // Unregister
+  // ===============================================================================================
+  public void unregister(String eventType, Observer<GameDataServiceEvent> observer) {
+    eventDispatcher.unregister(eventType, observer);
+  }
+
   // ===================================================================================================================
   // Clear
   // ===================================================================================================================
@@ -80,6 +108,8 @@ public final class GameDataService {
 
     meshes.clear();
     textures.clear();
+
+    eventDispatcher.notify(new GameDataServiceEvent(CLEAR_EVENT));
   }
 
 
@@ -143,6 +173,7 @@ public final class GameDataService {
   public void readLevel(Map<String, Object> json) throws IOException {
     clear();
 
+    eventDispatcher.notify(new GameDataServiceEvent(START_READING_LEVEL_EVENT));
     try {
       String type = (String) json.get(TYPE_KEY);
       Map<String, Object> data = (Map<String, Object>) json.get(LEVEL_DATA_KEY);
@@ -174,6 +205,8 @@ public final class GameDataService {
     } catch (ClassCastException e) {
       LOGGER.warn("Could not read json, because the json does not describe a valid level", e);
     }
+
+    eventDispatcher.notify(new GameDataServiceEvent(FINISH_READING_LEVEL_EVENT));
   }
 
 
@@ -214,6 +247,8 @@ public final class GameDataService {
     } catch (ClassCastException e) {
       LOGGER.warn("Could not read json, the json does not describe a valid object", e);
     }
+
+    eventDispatcher.notify(new GameDataServiceEvent(GAME_OBJECT_ADDED_EVENT));
   }
 
 
@@ -247,6 +282,8 @@ public final class GameDataService {
     } catch (ClassCastException e) {
       LOGGER.warn("Could not read json, the json does not describe a valid mesh", e);
     }
+
+    eventDispatcher.notify(new GameDataServiceEvent(MESH_ADDED_EVENT));
   }
 
 
@@ -268,7 +305,7 @@ public final class GameDataService {
         case TEXTURES_PNG_TYPE_VALUE:
           String path = (String) json.get(TEXTURES_PNG_PATH_KEY);
           // TODO read png
-          //textures.put(name, dosomething);
+          // textures.put(name, dosomething);
           break;
 
         default:
@@ -277,6 +314,8 @@ public final class GameDataService {
     } catch (ClassCastException e) {
       LOGGER.warn("Could not read json, the json does not describe a valid texture", e);
     }
+
+    eventDispatcher.notify(new GameDataServiceEvent(TEXTURE_ADDED_EVENT));
   }
 
 

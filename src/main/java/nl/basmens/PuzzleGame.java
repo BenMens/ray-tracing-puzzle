@@ -5,9 +5,8 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
-
+import java.io.IOException;
 import java.nio.IntBuffer;
-import java.util.HashMap;
 import java.util.Map;
 import nl.basmens.events.listeners.EventDispatcher;
 import nl.basmens.events.listeners.KeyEventDispatcher;
@@ -18,10 +17,7 @@ import nl.basmens.events.types.Event;
 import nl.basmens.game.Player;
 import nl.basmens.game.levels.AbstractLevel;
 import nl.basmens.game.levels.TestLevel;
-import nl.basmens.util.GameObjectFactory;
-import nl.basmens.util.GameObjectReader;
-import nl.basmens.util.LevelFactory;
-import nl.basmens.util.LevelFileReader;
+import nl.basmens.util.GameDataService;
 import nl.basmens.util.Time;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -178,24 +174,11 @@ public class PuzzleGame implements GlfwEventSource {
   }
 
   // ===============================================================================================
-  // Loop
+  // Load level
   // ===============================================================================================
-  private static AbstractLevel loadLevel(String path) {
-    try (LevelFileReader lr = new LevelFileReader(); GameObjectReader or = new GameObjectReader()) {
-      lr.read(path);
-      AbstractLevel level = LevelFactory.getLevel(lr.getType(), lr.getLevelData());
-
-      for (HashMap<String, Object> objectJson : lr.getGameObjects()) {
-        or.read(objectJson);
-        level.addGameObject(GameObjectFactory.getGameObject(or.getType(), or.getPosition(),
-            or.getMesh(), or.getTexture(), or.getObjectData()));
-      }
-
-      return level;
-    } catch (Exception e) {
-      LOGGER.warn("Failed to load level '" + path + "'", e);
-      return null;
-    }
+  private static void loadLevel(String path) throws IOException {
+    GameDataService.get().readLevel(path);
+    GameDataService.get().getLevel().printData();
   }
 
   // ===============================================================================================
@@ -253,8 +236,11 @@ public class PuzzleGame implements GlfwEventSource {
   // Main
   // ===============================================================================================
   public static void main(String[] args) {
-    AbstractLevel level = loadLevel("levels/example.json");
-    level.printData();
+    try {
+      loadLevel("levels/example.json");
+    } catch (IOException e) {
+      System.out.println("AHHHHHHHHHHHH");
+    }
 
     //new PuzzleGame().run();
   }

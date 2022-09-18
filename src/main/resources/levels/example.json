@@ -27,12 +27,12 @@
       "name": "cube"
     },
     {
-      "type" : "obj",
+      "type": "obj",
       "name": "donut",
       "path": "obj-files/donut_low.obj"
     },
     {
-      "type" : "obj",
+      "type": "obj",
       "name": "monkey",
       "path": "obj-files/monkey.obj"
     }

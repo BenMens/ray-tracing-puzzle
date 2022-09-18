@@ -6,41 +6,37 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Vector3f;
 
-public final class GameObjectReader implements AutoCloseable {
-  private static final Logger LOGGER = LogManager.getLogger(GameObjectReader.class);
+public final class MeshReader implements AutoCloseable {
+  private static final Logger LOGGER = LogManager.getLogger(MeshReader.class);
 
   // Generics
   private static final String TYPE_KEY = "type";
-  private static final String POSITION_KEY = "position";
-  private static final String MESH_KEY = "mesh";
-  private static final String TEXTURE_KEY = "texture";
-  private static final String OBJECT_DATA_KEY = "object data";
+  private static final String NAME_KEY = "name";
 
   // Object in different file
   private static final String OTHER_FILE_TYPE_VALUE = "json";
   private static final String OTHER_FILE_PATH_KEY = "path";
 
+  // Mesh is in obj file
+  private static final String OBJ_FILE_TYPE_VALUE = "obj";
+  private static final String OBJ_FILE_PATH_KEY = "path";
+
   private String type;
-  private Vector3f position;
-  private String mesh;
-  private String texture;
-  private HashMap<String, Object> objectData;
+  private String name;
+  private String objFilePath;
 
   private ArrayList<String> otherFilePathStack = new ArrayList<>();
 
   // ===============================================================================================
   // Read
   // ===============================================================================================
-  @SuppressWarnings("unchecked") 
-  public GameObjectReader read(Map<String, Object> object) throws IOException {
+  public MeshReader read(Map<String, Object> object) throws IOException {
     try {
       type = (String) object.get(TYPE_KEY);
 
@@ -56,18 +52,11 @@ public final class GameObjectReader implements AutoCloseable {
         otherFilePathStack.clear();
       }
       
-      if (object.containsKey(POSITION_KEY)) {
-        ArrayList<BigDecimal> vector = (ArrayList<BigDecimal>) object.get(POSITION_KEY);
-        position = new Vector3f(vector.get(0).floatValue(), vector.get(1).floatValue(), vector.get(2).floatValue());
+      if (object.containsKey(NAME_KEY)) {
+        name = (String) object.get(NAME_KEY);
       }
-      if (object.containsKey(MESH_KEY)) {
-        mesh = (String) object.get(MESH_KEY);
-      }
-      if (object.containsKey(TEXTURE_KEY)) {
-        texture = (String) object.get(TEXTURE_KEY);
-      }
-      if (object.containsKey(OBJECT_DATA_KEY)) {
-        objectData = (HashMap<String, Object>) object.get(OBJECT_DATA_KEY);
+      if (OBJ_FILE_TYPE_VALUE.equals(type) && object.containsKey(OBJ_FILE_PATH_KEY)) {
+        objFilePath = (String) object.get(OBJ_FILE_PATH_KEY);
       }
       
     } catch (ClassCastException e) {
@@ -79,7 +68,7 @@ public final class GameObjectReader implements AutoCloseable {
 
 
   @SuppressWarnings("unchecked")
-  public GameObjectReader read(String path) throws IOException {
+  public MeshReader read(String path) throws IOException {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try (InputStream in = classLoader.getResourceAsStream(path);
         BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
@@ -100,18 +89,11 @@ public final class GameObjectReader implements AutoCloseable {
         otherFilePathStack.clear();
       }
 
-      if (object.containsKey(POSITION_KEY)) {
-        ArrayList<BigDecimal> vector = (ArrayList<BigDecimal>) object.get(POSITION_KEY);
-        position = new Vector3f(vector.get(0).floatValue(), vector.get(1).floatValue(), vector.get(2).floatValue());
+      if (object.containsKey(NAME_KEY)) {
+        name = (String) object.get(NAME_KEY);
       }
-      if (object.containsKey(MESH_KEY)) {
-        mesh = (String) object.get(MESH_KEY);
-      }
-      if (object.containsKey(TEXTURE_KEY)) {
-        texture = (String) object.get(TEXTURE_KEY);
-      }
-      if (object.containsKey(OBJECT_DATA_KEY)) {
-        objectData = (HashMap<String, Object>) object.get(OBJECT_DATA_KEY);
+      if (OBJ_FILE_TYPE_VALUE.equals(type) && object.containsKey(OBJ_FILE_PATH_KEY)) {
+        objFilePath = (String) object.get(OBJ_FILE_PATH_KEY);
       }
       
     } catch (JsonException e) {
@@ -131,20 +113,12 @@ public final class GameObjectReader implements AutoCloseable {
     return type;
   }
 
-  public Vector3f getPosition() {
-    return position;
+  public String getName() {
+    return name;
   }
 
-  public String getMesh() {
-    return mesh;
-  }
-
-  public String getTexture() {
-    return texture;
-  }
-
-  public Map<String, Object> getObjectData() {
-    return objectData;
+  public String getObjFilePath() {
+    return objFilePath;
   }
 
 

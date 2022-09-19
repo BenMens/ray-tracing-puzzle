@@ -62,14 +62,14 @@ public class TestLevel extends AbstractLevel implements Renderable {
       new MeshInstance(monkey, (new Matrix4f()).translate(-1.5F, 0, 0)),
       new MeshInstance(cube, (new Matrix4f()).translate(1.5F, 0, 0)),
       new MeshInstance(triangles, (new Matrix4f()).translate(0, 1.5F, 0)),
-      // new MeshInstance(donut, (new Matrix4f()).scale(0.2F).translate(0, -5F, 0))
+      //new MeshInstance(donut, (new Matrix4f()).scale(0.2F).translate(0, -5F, 0))
     };
   }
 
 
   @Override
   public int getMaxMeshInstanceCount() {
-    return 5;
+    return 3;
   }
 
 }

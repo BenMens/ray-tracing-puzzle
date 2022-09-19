@@ -26,7 +26,7 @@ layout(location = 6) uniform float u_time;
 // Structs
 // =====================================================================================================================
 struct MeshInstance {
-  mat4 modelMatrix;     //    0
+  mat4 inverseModelMatrix;     //    0
   mat4 normalMatrix;    //   64
   vec4 center;          //  128
   float radius2;        //  144
@@ -212,19 +212,22 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
       continue;
     }
 
+    vec3 modelOrigin = (m.inverseModelMatrix * vec4(origin, 1)).xyz;
+    vec3 modeldirection = (m.inverseModelMatrix * vec4(direction, 0)).xyz;
+
     // If ray comes close to the mesh, check intersection with mesh
-    if (intersectSphere(origin, direction, m.center.xyz, m.radius2, t) && t < tNear) {
+    if (intersectSphere(modelOrigin, modeldirection, m.center.xyz, m.radius2, t) && t < tNear) {
 
       // Loop through all the triangles making up the mesh
       for (int j = 0; j < m.facesCount; j++) {
 
         // Check for intersection with the triangle
         if (intersectTriangle(
-              origin, 
-              direction, 
-              (m.modelMatrix * verticesPos[m.verticesOffset + faces[m.facesOffset + j][0].indexPos]).xyz, 
-              (m.modelMatrix * verticesPos[m.verticesOffset + faces[m.facesOffset + j][1].indexPos]).xyz, 
-              (m.modelMatrix * verticesPos[m.verticesOffset + faces[m.facesOffset + j][2].indexPos]).xyz, 
+              modelOrigin, 
+              modeldirection, 
+              verticesPos[m.verticesOffset + faces[m.facesOffset + j][0].indexPos].xyz, 
+              verticesPos[m.verticesOffset + faces[m.facesOffset + j][1].indexPos].xyz, 
+              verticesPos[m.verticesOffset + faces[m.facesOffset + j][2].indexPos].xyz, 
               t, u, v
             ) && t < tNear) {
           
@@ -248,10 +251,10 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
     verticesST[m.verticesSTOffset + faces[m.facesOffset + indexNear][1].indexST] * vNear +
     verticesST[m.verticesSTOffset + faces[m.facesOffset + indexNear][2].indexST] * (1-uNear-vNear);
 
-  vec3 normal = 
-    (m.normalMatrix * verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][0].indexNormal]).xyz * uNear +
-    (m.normalMatrix * verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][1].indexNormal]).xyz * vNear +
-    (m.normalMatrix * verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][2].indexNormal]).xyz * (1-uNear-vNear);
+  vec3 normal = (m.normalMatrix * (
+    verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][0].indexNormal] * uNear +
+    verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][1].indexNormal] * vNear +
+    verticesN[m.normalsOffset + faces[m.facesOffset + indexNear][2].indexNormal] * (1-uNear-vNear))).xyz;
 
   hit = createRayHit();
   hit.position = origin + tNear * direction;

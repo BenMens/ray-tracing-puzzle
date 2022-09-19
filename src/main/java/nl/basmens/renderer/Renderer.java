@@ -347,7 +347,7 @@ public class Renderer {
           MeshInterface m = mi.mesh();
           AugumentedMesh am = meshRegistry.get(m.getName());
 
-          mi.modelMatrix().get(meshBufferData);
+          mi.modelMatrix().invertAffine().get(meshBufferData);
 
           mi.modelMatrix().normal().get(64, meshBufferData);
 

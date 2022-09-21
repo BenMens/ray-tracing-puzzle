@@ -19,6 +19,7 @@ public class TestLevel extends AbstractLevel implements Renderable {
   private MeshInterface donut;
   private MeshInterface cube;
   private MeshInterface monkey;
+  private MeshInterface testScene;
 
 
   // ===============================================================================================
@@ -32,6 +33,7 @@ public class TestLevel extends AbstractLevel implements Renderable {
       cube = reader.read("cube", "obj-files/cube.obj").getMesh();
       donut = reader.read("donut", "obj-files/donut_low.obj").getMesh();
       monkey = reader.read("monkey", "obj-files/monkey.obj").getMesh();
+      testScene = reader.read("test scene", "obj-files/test_scene.obj").getMesh();
     } catch (Exception e) {
       String message = "Exception raised while reading meshes: " + e.getMessage();
 
@@ -53,23 +55,24 @@ public class TestLevel extends AbstractLevel implements Renderable {
 
   @Override
   public MeshInterface[] getMeshes() {
-    return new MeshInterface[] {cube, monkey, triangles, donut};
+    return new MeshInterface[] {cube, monkey, triangles, donut, testScene};
   }
 
   @Override
   public MeshInstance[] getMeshInstances() {
     return new MeshInstance[] {
-      new MeshInstance(monkey, (new Matrix4f()).translate(-1.5F, 0, 0)),
-      new MeshInstance(cube, (new Matrix4f()).translate(1.5F, 0, 0)),
-      new MeshInstance(triangles, (new Matrix4f()).translate(0, 1.5F, 0)),
-      //new MeshInstance(donut, (new Matrix4f()).scale(0.2F).translate(0, -5F, 0))
+      // new MeshInstance(monkey, (new Matrix4f()).translate(-1.5F, 0, 0)),
+      // new MeshInstance(cube, (new Matrix4f()).translate(1.5F, 0, 0)),
+      // new MeshInstance(triangles, (new Matrix4f()).translate(0, 1.5F, 0)),
+      // new MeshInstance(donut, (new Matrix4f()).scale(0.2F).translate(0, -5F, 0))
+      new MeshInstance(testScene, (new Matrix4f()).scale(1F).translate(0, 0, 0))
     };
   }
 
 
   @Override
   public int getMaxMeshInstanceCount() {
-    return 3;
+    return 1;
   }
 
 }

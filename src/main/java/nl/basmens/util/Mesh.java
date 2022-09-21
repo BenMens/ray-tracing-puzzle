@@ -32,7 +32,7 @@ public class Mesh implements MeshInterface {
     setIndicesData(initIndices);
 
     centre = new Vector3f(0);
-    radius2 = 3;
+    radius2 = 10000;
   }
 
 

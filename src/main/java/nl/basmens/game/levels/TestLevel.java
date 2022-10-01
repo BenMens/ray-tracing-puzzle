@@ -80,7 +80,7 @@ public class TestLevel extends AbstractLevel implements Renderable {
     System.out.println("}");
 
     System.out.println("game objects: [");
-    getGameObjects().forEach(GameObject::printData);
+    getGameObjects().forEach((String id, GameObject value) -> value.printData());
     System.out.println("]");
   }
 

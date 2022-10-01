@@ -1,7 +1,7 @@
 package nl.basmens.game.levels;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import nl.basmens.events.listeners.EventDispatcher;
 import nl.basmens.events.sources.LevelEventSource;
 import nl.basmens.events.types.Event;
@@ -18,7 +18,7 @@ public abstract class AbstractLevel implements LevelEventSource {
 
   private Renderer renderer;
 
-  private ArrayList<GameObject> gameObjects = new ArrayList<>();
+  private HashMap<String, GameObject> gameObjects = new HashMap<>();
 
   // ===============================================================================================
   // Constructor
@@ -61,12 +61,16 @@ public abstract class AbstractLevel implements LevelEventSource {
   }
 
   @SuppressWarnings("unchecked")
-  public List<GameObject> getGameObjects() {
-    return (List<GameObject>) gameObjects.clone();
+  public Map<String, GameObject> getGameObjects() {
+    return (Map<String, GameObject>) gameObjects.clone();
   }
 
-  public void addGameObject(GameObject gameObject) {
-    gameObjects.add(gameObject);
+  public Object getGameObjectById(String gameObjectId) {
+    return gameObjects.get(gameObjectId);
+  }
+
+  public void addGameObject(String gameObjectId, GameObject gameObject) {
+    gameObjects.put(gameObjectId, gameObject);
   }
 
 

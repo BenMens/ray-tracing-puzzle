@@ -6,53 +6,51 @@
   },
 
 
-  "game objects": [
-    {
+  "game objects": {
+    "block": {
       "type": "game object",
       "position": [1, 2, 3],
       "mesh": "cube",
       "texture": "stone",
       "object data": {}
     },
-    {
-      "type": "json",
-      "path": "game-objects/chest.json",
-      "texture": "dirt"
+    "chest": {
+      "type": "chest",
+      "position": [1, 2, 3],
+      "mesh": "donut",
+      "texture": "dirt",
+      "object data": {
+        "items": ["stick", "apple", "paper"]
+      }
     }
-  ],
+  },
 
-  "meshes": [
-    {
-      "type": "cube",
-      "name": "cube"
+  "meshes": {
+    "cube": {
+      "type": "cube"
     },
-    {
+    "donut": {
       "type": "obj",
-      "name": "donut",
       "path": "obj-files/donut_low.obj"
     },
-    {
+    "monkey": {
       "type": "obj",
-      "name": "monkey",
       "path": "obj-files/monkey.obj"
     }
-  ],
+  },
 
-  "textures": [
-    {
+  "textures": {
+    "dirt": {
       "type": "png",
-      "name": "dirt",
       "texture": "textures/dirt.png"
     },
-    {
+    "stone": {
       "type": "png",
-      "name": "stone",
       "texture": "textures/stone.png"
     },
-    {
+    "wood": {
       "type": "png",
-      "name": "wood",
       "texture": "textures/wood.png"
     }
-  ]
+  }
 }

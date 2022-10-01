@@ -1,9 +1,0 @@
-{
-  "type": "chest",
-  "position": [1, 2, 3],
-  "mesh": "donut",
-  "texture": "wood",
-  "object data": {
-    "items": ["stick", "apple", "paper"]
-  }
-}

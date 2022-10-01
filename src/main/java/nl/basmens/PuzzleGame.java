@@ -5,6 +5,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
+
 import java.io.IOException;
 import java.nio.IntBuffer;
 import java.util.Map;
@@ -37,8 +38,7 @@ public class PuzzleGame implements GlfwEventSource {
 
   private long window;
 
-  public final EventDispatcher<Event> windowEventsDispatcher =
-      new EventDispatcher<>("open", "close");
+  public final EventDispatcher<Event> windowEventsDispatcher = new EventDispatcher<>("open", "close");
   public final KeyEventDispatcher keyEventDispatcher = new KeyEventDispatcher();
   public final MouseEventDispatcher mouseEventDispatcher = new MouseEventDispatcher();
 
@@ -85,8 +85,8 @@ public class PuzzleGame implements GlfwEventSource {
     // Set log4j error callback
     // ============================================================
     glfwSetErrorCallback(new GLFWErrorCallback() {
-      private static Map<Integer, String> errorCodes = APIUtil
-          .apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
+      private static Map<Integer, String> errorCodes =
+          APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, GLFW.class);
 
       @Override
       public void invoke(int error, long description) {
@@ -139,8 +139,7 @@ public class PuzzleGame implements GlfwEventSource {
 
       GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-      glfwSetWindowPos(window, (vidmode.width() - width.get(0)) / 2,
-          (vidmode.height() - height.get(0)) / 2);
+      glfwSetWindowPos(window, (vidmode.width() - width.get(0)) / 2, (vidmode.height() - height.get(0)) / 2);
     }
 
     // ============================================================
@@ -179,6 +178,8 @@ public class PuzzleGame implements GlfwEventSource {
   private static void loadLevel(String path) throws IOException {
     GameDataService.get().readLevel(path);
     GameDataService.get().getLevel().printData();
+
+    System.out.println(GameDataService.get().getMeshes().size());
   }
 
   // ===============================================================================================
@@ -242,6 +243,6 @@ public class PuzzleGame implements GlfwEventSource {
       System.out.println("AHHHHHHHHHHHH");
     }
 
-    //new PuzzleGame().run();
+    // new PuzzleGame().run();
   }
 }

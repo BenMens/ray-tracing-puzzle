@@ -10,8 +10,8 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import nl.basmens.events.listeners.EventDispatcher;
 import nl.basmens.events.listeners.Observer;
 import nl.basmens.events.types.GameDataServiceEvent;
@@ -33,26 +33,18 @@ public final class GameDataService {
   private static final String LEVEL_DATA_KEY = "position";
   private static final String GAME_OBJECTS_KEY = "game objects";
   private static final String MESHES_KEY = "meshes";
-  private static final String TEXTUES_KEY = "textures";
+  private static final String TEXTURES_KEY = "textures";
   private static final String GAME_OBJECTS_TYPE_KEY = "type";
   private static final String GAME_OBJECTS_POSITION_KEY = "position";
   private static final String GAME_OBJECTS_MESH_KEY = "mesh";
   private static final String GAME_OBJECTS_TEXTURE_KEY = "texture";
   private static final String GAME_OBJECTS_OBJECT_DATA_KEY = "object data";
-  private static final String GAME_OBJECTS_REFERENCE_TYPE_VALUE = "json";
-  private static final String GAME_OBJECTS_REFERENCE_PATH_KEY = "path";
   private static final String MESHES_TYPE_KEY = "type";
-  private static final String MESHES_NAME_KEY = "name";
   private static final String MESHES_OBJ_TYPE_VALUE = "obj";
   private static final String MESHES_OBJ_PATH_KEY = "path";
-  private static final String MESHES_REFERENCE_TYPE_VALUE = "json";
-  private static final String MESHES_REFERENCE_PATH_KEY = "path";
   private static final String TEXTURES_TYPE_KEY = "type";
-  private static final String TEXTURES_NAME_KEY = "name";
   private static final String TEXTURES_PNG_TYPE_VALUE = "png";
   private static final String TEXTURES_PNG_PATH_KEY = "path";
-  private static final String TEXTURES_REFERENCE_TYPE_VALUE = "json";
-  private static final String TEXTURES_REFERENCE_PATH_KEY = "path";
 
   public static final String CLEAR_EVENT = "clear";
   public static final String START_READING_LEVEL_EVENT = "start reading level";
@@ -70,7 +62,7 @@ public final class GameDataService {
   private AbstractLevel level;
 
   private HashMap<String, MeshInterface> meshes = new HashMap<>();
-  private HashMap<String, Object> textures = new HashMap<>();
+  private HashMap<String, Object> textures = new HashMap<>(); // TODO add textures
 
 
   // ===================================================================================================================
@@ -132,35 +124,6 @@ public final class GameDataService {
     return new HashMap<>();
   }
 
-  // ===================================================================================================================
-  // Parse json reference
-  // ===================================================================================================================
-  private static Map<String, Object> parseJsonReference(Map<String, Object> json, String typeKey, String referenceValue,
-      String pathKey) throws IOException {
-
-    ArrayList<String> referencePathHistory = new ArrayList<>();
-    Map<String, Object> result = new HashMap<>();
-
-    json.forEach(result::put);
-
-    while (referenceValue.equals(json.get(typeKey))) {
-      String path = (String) json.get(pathKey);
-      if (referencePathHistory.contains(path)) {
-        break;
-      }
-      referencePathHistory.add(path);
-      json = getJson(path);
-
-      json.forEach((String key, Object value) -> {
-        if (typeKey.equals(key) || !result.containsKey(key)) {
-          result.put(key, value);
-        }
-      });
-    }
-
-    return result;
-  }
-
 
   // ===================================================================================================================
   // Read level
@@ -191,16 +154,19 @@ public final class GameDataService {
           LOGGER.warn("Could not create level with type '" + type + "'");
       }
 
-      for (HashMap<String, Object> mesh : (ArrayList<HashMap<String, Object>>) json.get(MESHES_KEY)) {
-        addMesh(mesh);
+      HashMap<String, Object> levelMeshes = (HashMap<String, Object>) json.get(MESHES_KEY);
+      for (Entry<String, Object> mesh : levelMeshes.entrySet()) {
+        addMesh(mesh.getKey(), (HashMap<String, Object>) mesh.getValue());
       }
 
-      for (HashMap<String, Object> texture : (ArrayList<HashMap<String, Object>>) json.get(TEXTUES_KEY)) {
-        addTexture(texture);
+      HashMap<String, Object> levelTextures = (HashMap<String, Object>) json.get(TEXTURES_KEY);
+      for (Entry<String, Object> texture : levelTextures.entrySet()) {
+        addTexture(texture.getKey(), (HashMap<String, Object>) texture.getValue());
       }
 
-      for (HashMap<String, Object> object : (ArrayList<HashMap<String, Object>>) json.get(GAME_OBJECTS_KEY)) {
-        addGameObject(object);
+      HashMap<String, Object> levelGameObjects = (HashMap<String, Object>) json.get(GAME_OBJECTS_KEY);
+      for (Entry<String, Object> gameObject : levelGameObjects.entrySet()) {
+        addGameObject(gameObject.getKey(), (HashMap<String, Object>) gameObject.getValue());
       }
     } catch (ClassCastException e) {
       LOGGER.warn("Could not read json, because the json does not describe a valid level", e);
@@ -214,11 +180,13 @@ public final class GameDataService {
   // Add game object
   // ===================================================================================================================
   @SuppressWarnings("unchecked")
-  public void addGameObject(Map<String, Object> json) throws IOException {
-    try {
-      json = parseJsonReference(json, GAME_OBJECTS_TYPE_KEY, GAME_OBJECTS_REFERENCE_TYPE_VALUE,
-          GAME_OBJECTS_REFERENCE_PATH_KEY);
+  public void addGameObject(String gameObjectId, Map<String, Object> json) {
+    if (level.getGameObjectById(gameObjectId) != null) {
+      LOGGER.warn("Failed to add GameObject because there is already one known with id '" + gameObjectId + "'");
+      return;
+    }
 
+    try {
       String type = (String) json.get(GAME_OBJECTS_TYPE_KEY);
 
       ArrayList<BigDecimal> vector = (ArrayList<BigDecimal>) json.get(GAME_OBJECTS_POSITION_KEY);
@@ -233,12 +201,12 @@ public final class GameDataService {
 
       switch (type) {
         case "game object":
-          level.addGameObject(new GameObject(position, mesh, texture));
+          addGameObjectAndNotify(gameObjectId, new GameObject(position, mesh, texture));
           break;
 
         case "chest":
           JsonArray items = (JsonArray) data.get("items");
-          level.addGameObject(new Chest(position, mesh, texture, items.toArray(new String[0])));
+          addGameObjectAndNotify(gameObjectId, new Chest(position, mesh, texture, items.toArray(new String[0])));
           break;
 
         default:
@@ -247,33 +215,35 @@ public final class GameDataService {
     } catch (ClassCastException e) {
       LOGGER.warn("Could not read json, the json does not describe a valid object", e);
     }
+  }
 
-    eventDispatcher.notify(new GameDataServiceEvent(GAME_OBJECT_ADDED_EVENT));
+
+  private void addGameObjectAndNotify(String gameObjectId, GameObject gameObject) {
+    level.addGameObject(gameObjectId, gameObject);
+    eventDispatcher.notify(new GameDataServiceEvent(GAME_OBJECT_ADDED_EVENT, gameObject));
   }
 
 
   // ===================================================================================================================
   // Add mesh
   // ===================================================================================================================
-  public void addMesh(Map<String, Object> json) throws IOException {
+  public void addMesh(String meshId, Map<String, Object> json) throws IOException {
+    if (meshes.containsKey(meshId)) {
+      LOGGER.warn("Failed to add MeshInteface because there is already one known with id '" + meshId + "'");
+      return;
+    }
+
     try {
-      json = parseJsonReference(json, MESHES_TYPE_KEY, MESHES_REFERENCE_TYPE_VALUE, MESHES_REFERENCE_PATH_KEY);
-
-      String name = (String) json.get(MESHES_NAME_KEY);
-      if (meshes.containsKey(name)) {
-        LOGGER.warn("Could not add mesh '" + name + "' because there is already a know mesh with that name");
-        return;
-      }
-
       String type = (String) json.get(MESHES_TYPE_KEY);
+
       switch (type) {
         case MESHES_OBJ_TYPE_VALUE:
           String path = (String) json.get(MESHES_OBJ_PATH_KEY);
-          meshes.put(name, objFileReader.read(path).getMesh());
+          addMeshAndNotify(meshId, objFileReader.read(path).getMesh());
           break;
 
         case "cube":
-          meshes.put(name, new Triangles());
+          addMeshAndNotify(meshId, new Triangles());
           break;
 
         default:
@@ -282,30 +252,31 @@ public final class GameDataService {
     } catch (ClassCastException e) {
       LOGGER.warn("Could not read json, the json does not describe a valid mesh", e);
     }
+  }
 
-    eventDispatcher.notify(new GameDataServiceEvent(MESH_ADDED_EVENT));
+  private void addMeshAndNotify(String meshId, MeshInterface mesh) {
+    meshes.put(meshId, mesh);
+    eventDispatcher.notify(new GameDataServiceEvent(MESH_ADDED_EVENT, mesh));
   }
 
 
   // ===================================================================================================================
   // Add texture
   // ===================================================================================================================
-  public void addTexture(Map<String, Object> json) throws IOException {
+  public void addTexture(String textureId, Map<String, Object> json) {
+    if (textures.containsKey(textureId)) {
+      LOGGER.warn("Failed to add Texture because there is already one known with id '" + textureId + "'");
+      return;
+    }
+
     try {
-      json = parseJsonReference(json, TEXTURES_TYPE_KEY, TEXTURES_REFERENCE_TYPE_VALUE, TEXTURES_REFERENCE_PATH_KEY);
-
-      String name = (String) json.get(TEXTURES_NAME_KEY);
-      if (textures.containsKey(name)) {
-        LOGGER.warn("Could not add texture '" + name + "' because there is already a know texture with that name");
-        return;
-      }
-
       String type = (String) json.get(TEXTURES_TYPE_KEY);
+
       switch (type) {
         case TEXTURES_PNG_TYPE_VALUE:
           String path = (String) json.get(TEXTURES_PNG_PATH_KEY);
           // TODO read png
-          // textures.put(name, dosomething);
+          // addTextureAndNotify();
           break;
 
         default:
@@ -314,8 +285,11 @@ public final class GameDataService {
     } catch (ClassCastException e) {
       LOGGER.warn("Could not read json, the json does not describe a valid texture", e);
     }
+  }
 
-    eventDispatcher.notify(new GameDataServiceEvent(TEXTURE_ADDED_EVENT));
+  private void addTextureAndNotify(String textureId, Object texture) {
+    textures.put(textureId, texture);
+    // eventDispatcher.notify(new GameDataServiceEvent(TEXTURE_ADDED_EVENT, texture));
   }
 
 
@@ -327,12 +301,12 @@ public final class GameDataService {
   }
 
   @SuppressWarnings("unchecked")
-  public List<HashMap<String, Object>> getMeshes() {
-    return (List<HashMap<String, Object>>) meshes.clone();
+  public Map<String, MeshInterface> getMeshes() {
+    return (Map<String, MeshInterface>) meshes.clone();
   }
 
   @SuppressWarnings("unchecked")
-  public List<HashMap<String, Object>> getTextures() {
-    return (List<HashMap<String, Object>>) textures.clone();
+  public Map<String, Object> getTextures() {
+    return (Map<String, Object>) textures.clone();
   }
 }

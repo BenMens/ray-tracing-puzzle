@@ -47,14 +47,14 @@ public final class GameDataService {
   private static final String TEXTURES_PNG_PATH_KEY = "path";
 
   public static final String CLEAR_EVENT = "clear";
-  public static final String START_READING_LEVEL_EVENT = "start reading level";
-  public static final String FINISH_READING_LEVEL_EVENT = "finish reading level";
+  public static final String START_LOADING_LEVEL_EVENT = "start loading level";
+  public static final String FINISH_LOADING_LEVEL_EVENT = "finish loading level";
   public static final String GAME_OBJECT_ADDED_EVENT = "object added";
   public static final String MESH_ADDED_EVENT = "mesh added";
   public static final String TEXTURE_ADDED_EVENT = "texture added";
 
   private EventDispatcher<GameDataServiceEvent> eventDispatcher =
-      new EventDispatcher<>(CLEAR_EVENT, START_READING_LEVEL_EVENT, FINISH_READING_LEVEL_EVENT, GAME_OBJECT_ADDED_EVENT,
+      new EventDispatcher<>(CLEAR_EVENT, START_LOADING_LEVEL_EVENT, FINISH_LOADING_LEVEL_EVENT, GAME_OBJECT_ADDED_EVENT,
           MESH_ADDED_EVENT, TEXTURE_ADDED_EVENT);
 
   private ObjFileReader objFileReader = new ObjFileReader();
@@ -109,16 +109,16 @@ public final class GameDataService {
   // Get json
   // ===================================================================================================================
   @SuppressWarnings("unchecked")
-  private static HashMap<String, Object> getJson(String path) throws IOException {
+  private static HashMap<String, Object> parseJsonFile(String path) throws IOException {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try (InputStream in = classLoader.getResourceAsStream(path);
         BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
 
       return (HashMap<String, Object>) Jsoner.deserialize(br);
     } catch (JsonException e) {
-      LOGGER.warn("Could not read json file '" + path + "' because the json is invalid", e);
+      LOGGER.warn("Could not parse json file '" + path + "' because the json is invalid", e);
     } catch (ClassCastException e) {
-      LOGGER.warn("Could not read json file '" + path + "' because file is not a json object", e);
+      LOGGER.warn("Could not parse json file '" + path + "' because file is not a json object", e);
     }
 
     return new HashMap<>();
@@ -128,15 +128,15 @@ public final class GameDataService {
   // ===================================================================================================================
   // Read level
   // ===================================================================================================================
-  public void readLevel(String path) throws IOException {
-    readLevel(getJson(path));
+  public void loadLevel(String path) throws IOException {
+    loadLevel(parseJsonFile(path));
   }
 
   @SuppressWarnings("unchecked")
-  public void readLevel(Map<String, Object> json) throws IOException {
+  public void loadLevel(Map<String, Object> json) throws IOException {
     clear();
 
-    eventDispatcher.notify(new GameDataServiceEvent(START_READING_LEVEL_EVENT));
+    eventDispatcher.notify(new GameDataServiceEvent(START_LOADING_LEVEL_EVENT));
     try {
       String type = (String) json.get(TYPE_KEY);
       Map<String, Object> data = (Map<String, Object>) json.get(LEVEL_DATA_KEY);
@@ -169,10 +169,10 @@ public final class GameDataService {
         addGameObject(gameObject.getKey(), (HashMap<String, Object>) gameObject.getValue());
       }
     } catch (ClassCastException e) {
-      LOGGER.warn("Could not read json, because the json does not describe a valid level", e);
+      LOGGER.warn("Could not load json, because the json does not describe a valid level", e);
     }
 
-    eventDispatcher.notify(new GameDataServiceEvent(FINISH_READING_LEVEL_EVENT));
+    eventDispatcher.notify(new GameDataServiceEvent(FINISH_LOADING_LEVEL_EVENT));
   }
 
 

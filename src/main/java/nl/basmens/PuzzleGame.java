@@ -176,7 +176,7 @@ public class PuzzleGame implements GlfwEventSource {
   // Load level
   // ===============================================================================================
   private static void loadLevel(String path) throws IOException {
-    GameDataService.get().readLevel(path);
+    GameDataService.get().loadLevel(path);
     GameDataService.get().getLevel().printData();
 
     System.out.println(GameDataService.get().getMeshes().size());
@@ -237,12 +237,6 @@ public class PuzzleGame implements GlfwEventSource {
   // Main
   // ===============================================================================================
   public static void main(String[] args) {
-    try {
-      loadLevel("levels/example.json");
-    } catch (IOException e) {
-      System.out.println("AHHHHHHHHHHHH");
-    }
-
-    // new PuzzleGame().run();
+    new PuzzleGame().run();
   }
 }

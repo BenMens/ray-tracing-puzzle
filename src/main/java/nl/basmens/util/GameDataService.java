@@ -31,14 +31,14 @@ public final class GameDataService {
 
   private static final String TYPE_KEY = "type";
   private static final String LEVEL_DATA_KEY = "position";
-  private static final String GAME_OBJECTS_KEY = "game objects";
+  private static final String GAME_OBJECTS_KEY = "gameObjects";
   private static final String MESHES_KEY = "meshes";
   private static final String TEXTURES_KEY = "textures";
   private static final String GAME_OBJECTS_TYPE_KEY = "type";
   private static final String GAME_OBJECTS_POSITION_KEY = "position";
   private static final String GAME_OBJECTS_MESH_KEY = "mesh";
   private static final String GAME_OBJECTS_TEXTURE_KEY = "texture";
-  private static final String GAME_OBJECTS_OBJECT_DATA_KEY = "object data";
+  private static final String GAME_OBJECTS_OBJECT_DATA_KEY = "objectData";
   private static final String MESHES_TYPE_KEY = "type";
   private static final String MESHES_OBJ_TYPE_VALUE = "obj";
   private static final String MESHES_OBJ_PATH_KEY = "path";
@@ -200,7 +200,7 @@ public final class GameDataService {
       HashMap<String, Object> data = (HashMap<String, Object>) json.get(GAME_OBJECTS_OBJECT_DATA_KEY);
 
       switch (type) {
-        case "game object":
+        case "gameObject":
           addGameObjectAndNotify(gameObjectId, new GameObject(position, mesh, texture));
           break;
 

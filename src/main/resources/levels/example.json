@@ -1,25 +1,25 @@
 {
   "type": "type1",
-  "level data": {
-    "max time": 100,
-    "secret code": "answer is 42"
+  "levelData": {
+    "maxTime": 100,
+    "secretCode": "answer is 42"
   },
 
 
-  "game objects": {
+  "gameObjects": {
     "block": {
-      "type": "game object",
+      "type": "gameObject",
       "position": [1, 2, 3],
       "mesh": "cube",
       "texture": "stone",
-      "object data": {}
+      "objectData": {}
     },
     "chest": {
       "type": "chest",
       "position": [1, 2, 3],
       "mesh": "donut",
       "texture": "dirt",
-      "object data": {
+      "objectData": {
         "items": ["stick", "apple", "paper"]
       }
     }

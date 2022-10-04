@@ -55,11 +55,11 @@ public class TestLevel extends AbstractLevel implements Renderable {
       meshes.add(monkey);
       meshes.add(testScene);
 
-      // meshInstances.add(new MeshInstance(monkey, (new Matrix4f()).translate(-1.5F, 0, 0)));
-      // meshInstances.add(new MeshInstance(cube, (new Matrix4f()).translate(1.5F, 0, 0)));
-      // meshInstances.add(new MeshInstance(triangles, (new Matrix4f()).translate(0, 1.5F, 0)));
-      // meshInstances.add(new MeshInstance(donut, (new Matrix4f()).scale(0.2F).translate(0, -5F, 0)));
-      meshInstances.add(new MeshInstance(testScene, (new Matrix4f()).scale(1F).translate(0, 0, 0)));
+      meshInstances.add(new MeshInstance(monkey, 0, (new Matrix4f()).translate(-1.5F, 0, 0)));
+      meshInstances.add(new MeshInstance(cube, 1, (new Matrix4f()).translate(1.5F, 0, 0)));
+      meshInstances.add(new MeshInstance(triangles, 1, (new Matrix4f()).translate(0, 1.5F, 0)));
+      meshInstances.add(new MeshInstance(donut, 1, (new Matrix4f()).scale(0.2F).translate(0, -5F, 0)));
+      meshInstances.add(new MeshInstance(testScene, 3, (new Matrix4f()).scale(1F).translate(0, 0, 0)));
 
 
     } catch (Exception e) {

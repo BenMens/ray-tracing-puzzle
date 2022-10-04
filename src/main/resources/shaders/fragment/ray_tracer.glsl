@@ -20,6 +20,7 @@ layout(location = 3) uniform mat4 u_pointCameraMatrix;
 layout(location = 4) uniform mat3 u_vectorCameraMatrix;
 layout(location = 5) uniform ivec2 u_resolution;
 layout(location = 6) uniform float u_time;
+layout(location = 7) uniform sampler2D textures[4];
 
 
 // =====================================================================================================================
@@ -260,7 +261,8 @@ bool ray(in vec3 origin, in vec3 direction, in float tNear, out RayHit hit) {
   hit.position = origin + tNear * direction;
   hit.normal = normal;
   hit.direction = direction;
-  hit.albedo = getTexture(texCoord, textureIndex);
+  // hit.albedo = getTexture(texCoord, textureIndex);
+  hit.albedo = texture(textures[m.textureIndex], texCoord).rgb;
   hit.dist = tNear;
 
   return hasHit;

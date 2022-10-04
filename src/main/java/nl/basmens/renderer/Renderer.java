@@ -1,6 +1,7 @@
 package nl.basmens.renderer;
 
 import static org.lwjgl.opengl.GL43C.*;
+import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.*;
 
 import java.io.BufferedReader;
@@ -53,6 +54,11 @@ public class Renderer {
   private int facesBuffer;
   private int meshesBuffer;
 
+  private int textureId1;
+  private int textureId2;
+  private int textureId3;
+  private int textureId4;
+
   private IdentityHashMap<String, AugumentedMesh> meshRegistry = new IdentityHashMap<>();
 
   // ===============================================================================================
@@ -90,7 +96,7 @@ public class Renderer {
   public void init() throws Exception {  // TODO make specific exeption
     LOGGER.trace("reading vertex shader");
 
-    ByteBuffer vs = IoUtil.ioResourceToByteBuffer("shaders/vertex/vertex.vert", 4096);
+    ByteBuffer vs = IoUtil.ioResourceToByteBuffer("shaders/vertex/vertex.vert", 8192);
     int v = glCreateShader(GL_VERTEX_SHADER);
     compileShader(v, vs);
 
@@ -106,7 +112,7 @@ public class Renderer {
       while ((resource = br.readLine()) != null) {
         LOGGER.trace("reading fragment shader {}", resource);
 
-        ByteBuffer fs = IoUtil.ioResourceToByteBuffer(fragmentShadersPath + "/" + resource, 4096);
+        ByteBuffer fs = IoUtil.ioResourceToByteBuffer(fragmentShadersPath + "/" + resource, 8192);
         int f = glCreateShader(GL_FRAGMENT_SHADER);
         compileShader(f, fs);
 
@@ -219,6 +225,11 @@ public class Renderer {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    textureId1 = loadTexture("textures/dirt.png");
+    textureId2 = loadTexture("textures/stone.png");
+    textureId3 = loadTexture("textures/wood.png");
+    textureId4 = loadTexture("textures/paper.jpg");
   }
 
   void collectMeshes() {
@@ -266,6 +277,47 @@ public class Renderer {
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, meshesBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, meshesBufferSize * MESH_INSTANCE_SIZE, GL_DYNAMIC_DRAW);
+  }
+
+
+  public int loadTexture(String path) {
+    String fullPath = ClassLoader.getSystemResource(path).getPath().substring(1);
+
+    ByteBuffer image;
+    int width;
+    int height;
+
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      IntBuffer w = stack.mallocInt(1);
+      IntBuffer h = stack.mallocInt(1);
+      IntBuffer comp = stack.mallocInt(1);
+
+      /* Load image */
+      stbi_set_flip_vertically_on_load(true);
+      image = stbi_load(fullPath, w, h, comp, 4);
+
+      if (image == null) {
+        throw new RuntimeException("Failed to load a texture file!"
+           + System.lineSeparator() + stbi_failure_reason());
+      }
+
+      /* Get width and height of image */
+      width = w.get();
+      height = h.get();
+    }
+
+    int id = glGenTextures();
+
+    glBindTexture(GL_TEXTURE_2D, id);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+    return id;
   }
 
   void createShaderBuffers() {
@@ -357,7 +409,7 @@ public class Renderer {
               .putFloat(m.getRadius2())
               .putInt(am.facesOffset)  // facesOffset
               .putInt((int) m.getfacesCount())  // facesCount
-              .putInt(0)  // textureIndex
+              .putInt(mi.texture())  // textureIndex
               .putInt(am.verticesOffset)  // verticesOffset
               .putInt(am.normalsOffset)  // normalsOffset
               .putInt(am.textureCoordOffset)  // verticesSTOffset
@@ -394,6 +446,24 @@ public class Renderer {
       glUseProgram(this.shaderPrograms.get("ray_tracer"));
 
       glUniform1f(CAMERA_FOV_UNIFORM_LOCATION, camera.getFov());
+
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, textureId1);
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, textureId2);
+      glActiveTexture(GL_TEXTURE2);
+      glBindTexture(GL_TEXTURE_2D, textureId3);
+      glActiveTexture(GL_TEXTURE3);
+      glBindTexture(GL_TEXTURE_2D, textureId4);
+
+      IntBuffer t = stack.mallocInt(4);
+      t.put(0);
+      t.put(1);
+      t.put(2);
+      t.put(3);
+      t.flip();
+
+      glUniform1iv(7, t);
 
       FloatBuffer matBuffer = stack.mallocFloat(16);
       

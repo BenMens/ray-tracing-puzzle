@@ -52,8 +52,8 @@ public class Player {
   private double turnY;
 
   private double cameraSpeed = 3;
-  private double cameraSensitivityX = 0.003F;
-  private double cameraSensitivityY = 0.003F;
+  private double cameraSensitivityX = 0.001F;
+  private double cameraSensitivityY = 0.001F;
   
 
   /**

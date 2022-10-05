@@ -126,7 +126,7 @@ public final class GameDataService {
 
 
   // ===================================================================================================================
-  // Read level
+  // Load level
   // ===================================================================================================================
   public void loadLevel(String path) throws IOException {
     loadLevel(parseJsonFile(path));

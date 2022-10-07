@@ -25,6 +25,7 @@ public class TestLevel extends AbstractLevel implements Renderable {
   private MeshInterface cube;
   private MeshInterface monkey;
   private MeshInterface testScene;
+  private MeshInterface fancyCube;
 
   private Map<String, Object> levelData;
 
@@ -45,21 +46,24 @@ public class TestLevel extends AbstractLevel implements Renderable {
     try (ObjFileReader reader = new ObjFileReader()) {
       triangles = new Triangles();
       cube = reader.read("cube", "obj-files/cube.obj").getMesh();
-      donut = reader.read("donut", "obj-files/donut_low.obj").getMesh();
+      donut = reader.read("donut", "obj-files/donut.obj").getMesh();
       monkey = reader.read("monkey", "obj-files/monkey.obj").getMesh();
       testScene = reader.read("test scene", "obj-files/test_scene.obj").getMesh();
+      fancyCube = reader.read("fancy cube", "obj-files/fancy_cube.obj").getMesh();
 
       meshes.add(triangles);
       meshes.add(cube);
       meshes.add(donut);
       meshes.add(monkey);
       meshes.add(testScene);
+      meshes.add(fancyCube);
 
-      meshInstances.add(new MeshInstance(monkey, 0, (new Matrix4f()).translate(-1.5F, 0, 0)));
-      meshInstances.add(new MeshInstance(cube, 1, (new Matrix4f()).translate(1.5F, 0, 0)));
-      meshInstances.add(new MeshInstance(triangles, 1, (new Matrix4f()).translate(0, 1.5F, 0)));
+      // meshInstances.add(new MeshInstance(monkey, 0, (new Matrix4f()).translate(-1.5F, 0, 0)));
+      // meshInstances.add(new MeshInstance(cube, 1, (new Matrix4f()).translate(1.5F, 0, 0)));
+      // meshInstances.add(new MeshInstance(triangles, 1, (new Matrix4f()).translate(0, 1.5F, 0)));
       meshInstances.add(new MeshInstance(donut, 1, (new Matrix4f()).scale(0.2F).translate(0, -5F, 0)));
-      meshInstances.add(new MeshInstance(testScene, 3, (new Matrix4f()).scale(1F).translate(0, 0, 0)));
+      // meshInstances.add(new MeshInstance(testScene, 3, (new Matrix4f()).scale(1F).translate(0, 0, 0)));
+      meshInstances.add(new MeshInstance(fancyCube, 1, (new Matrix4f()).translate(1.5F, 0, 0)));
 
 
     } catch (Exception e) {

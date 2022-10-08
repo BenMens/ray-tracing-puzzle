@@ -227,7 +227,8 @@ public class Renderer {
     glBindVertexArray(0);
 
     textureId1 = loadTexture("textures/dirt.png");
-    textureId2 = loadTexture("textures/stone.png");
+    // textureId2 = loadTexture("textures/stone.png");
+    textureId2 = loadTexture("textures/fancy_cube.png");
     textureId3 = loadTexture("textures/wood.png");
     textureId4 = loadTexture("textures/paper.jpg");
   }
